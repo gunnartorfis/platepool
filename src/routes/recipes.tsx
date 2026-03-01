@@ -154,6 +154,7 @@ function RecipesPage() {
           }
 
           if (!tagsStr) {
+            console.log('[DEBUG] No tags found in metadata, calling AI...')
             try {
               const aiResult = (await generateRecipeTags({
                 data: {
@@ -164,10 +165,16 @@ function RecipesPage() {
                 },
               })) as { tags?: Array<string>; error?: string }
 
+              console.log('[DEBUG] AI result:', aiResult)
+
               if (aiResult && aiResult.tags && aiResult.tags.length > 0) {
+                console.log('[DEBUG] Setting tags:', aiResult.tags)
                 setTagsStr(aiResult.tags.join(', '))
+              } else {
+                console.log('[DEBUG] AI returned no tags')
               }
-            } catch {
+            } catch (e) {
+              console.error('[DEBUG] AI error:', e)
               // Ignore AI errors
             }
           }

@@ -325,8 +325,11 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
       .parse(data),
   )
   .handler(async ({ data }) => {
+    console.log('[DEBUG] generateRecipeTags called with:', data)
+
     const apiKey = process.env.GOOGLE_API_KEY
     if (!apiKey) {
+      console.log('[DEBUG] No GOOGLE_API_KEY configured')
       return { error: 'AI not configured' }
     }
 
@@ -336,6 +339,15 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
 
     const ingredientsList = data.ingredients?.slice(0, 10).join(', ') || ''
     const description = data.description || ''
+
+    console.log(
+      '[DEBUG] Calling AI with title:',
+      data.title,
+      'description:',
+      description,
+      'ingredients:',
+      ingredientsList,
+    )
 
     const prompt = `Analyze this recipe and generate 3-5 relevant tags. Consider:
 - Main protein/ingredient (fish, chicken, beef, vegetarian, etc.)
