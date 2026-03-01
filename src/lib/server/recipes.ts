@@ -327,9 +327,9 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     console.log('[DEBUG] generateRecipeTags called with:', data)
 
-    const apiKey = process.env.GOOGLE_API_KEY
+    const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
-      console.log('[DEBUG] No GOOGLE_API_KEY configured')
+      console.log('[DEBUG] No GEMINI_API_KEY configured')
       return { error: 'AI not configured' }
     }
 
