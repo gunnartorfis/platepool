@@ -19,8 +19,16 @@ export const Route = createFileRoute('/families/$familyId')({
   component: FamilyPage,
 })
 
-const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-const MEALS = ['Dinner']
+const DAY_SHORT = [
+  'days.mon',
+  'days.tue',
+  'days.wed',
+  'days.thu',
+  'days.fri',
+  'days.sat',
+  'days.sun',
+]
+const MEALS = ['meals.dinner']
 
 function FamilyPage() {
   const { t } = useTranslation()
@@ -290,7 +298,7 @@ function FamilyPage() {
                     <div key={dayIndex} className="p-3">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {dayName}
+                          {t(dayName)}
                         </p>
                       </div>
 
@@ -381,7 +389,7 @@ function FamilyPage() {
                               className="text-xs text-primary hover:underline mt-1 block"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              ↗ recipe
+                              ↗ {t('common.recipe')}
                             </a>
                           )}
                         </div>
@@ -403,7 +411,7 @@ function FamilyPage() {
                     <div key={dayIndex} className="min-h-[180px]">
                       <div className="px-3 py-2 bg-muted/30 border-b border-border">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                          {dayName}
+                          {t(dayName)}
                         </p>
                       </div>
 
@@ -478,7 +486,7 @@ function FamilyPage() {
                                   )}
                                 >
                                   <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">
-                                    {mealType}
+                                    {t(mealType)}
                                   </p>
                                   {day?.mealName ? (
                                     <p className="text-sm font-medium leading-tight">
@@ -502,7 +510,7 @@ function FamilyPage() {
                                       className="text-[10px] text-primary hover:underline mt-1 block"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                      ↗ recipe
+                                      ↗ {t('common.recipe')}
                                     </a>
                                   )}
                                 </div>

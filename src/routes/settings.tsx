@@ -275,7 +275,7 @@ function SettingsPage() {
                         id="cname"
                         value={cName}
                         onChange={(e) => setCName(e.target.value)}
-                        placeholder="e.g. simple, fish, vegan"
+                        placeholder={t('settings.constraintPlaceholder')}
                         required
                       />
                     </div>
@@ -517,8 +517,8 @@ function SettingsPage() {
                   <SelectValue placeholder={t('settings.selectLanguage')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="is">Íslenska</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="is">{t('settings.icelandic')}</SelectItem>
+                  <SelectItem value="en">{t('settings.english')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

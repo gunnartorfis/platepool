@@ -21,7 +21,9 @@
     "success": "Success",
     "name": "Name",
     "email": "Email",
-    "password": "Password"
+    "password": "Password",
+    "recipe": "recipe",
+    "joinFailed": "Failed to join"
   },
   "auth": {
     "login": "Login",
@@ -64,11 +66,13 @@
     "generating": "Generating…",
     "notes": "Notes",
     "recipeUrl": "Recipe URL",
+    "recipeUrlPlaceholder": "https://…",
     "whatForDinner": "What's for dinner?",
     "anyNotes": "Any notes…",
     "noPreviousDinners": "No previous dinners",
     "noPreviousUrls": "No previous recipe URLs",
-    "shareWithGroups": "Share this week with groups"
+    "shareWithGroups": "Share this week with groups",
+    "aiGenerationFailed": "AI generation failed"
   },
   "groups": {
     "title": "Groups",
@@ -194,13 +198,16 @@
     "constraintName": "Name",
     "constraintEmoji": "Emoji",
     "constraintColor": "Color",
+    "constraintPlaceholder": "e.g. simple, fish, vegan",
     "preview": "Preview",
     "dayDefaults": "Day defaults",
     "dayDefaultsDesc": "Set default constraints per weekday. These auto-apply when planning.",
     "updateProfile": "Update profile",
     "changePassword": "Change password",
     "passwordChanged": "Password changed successfully",
-    "selectLanguage": "Select language"
+    "selectLanguage": "Select language",
+    "icelandic": "Icelandic",
+    "english": "English"
   },
   "days": {
     "monday": "Monday",
@@ -209,6 +216,16 @@
     "thursday": "Thursday",
     "friday": "Friday",
     "saturday": "Saturday",
-    "sunday": "Sunday"
+    "sunday": "Sunday",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+  },
+  "meals": {
+    "dinner": "Dinner"
   }
 }

@@ -12,7 +12,15 @@ export const Route = createFileRoute('/groups/$groupId')({
   component: GroupPage,
 })
 
-const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DAY_SHORT = [
+  'days.mon',
+  'days.tue',
+  'days.wed',
+  'days.thu',
+  'days.fri',
+  'days.sat',
+  'days.sun',
+]
 
 function GroupPage() {
   const { t } = useTranslation()
@@ -204,7 +212,7 @@ function GroupPage() {
                         return (
                           <div key={i} className="p-2.5 min-h-[70px]">
                             <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                              {dayName}
+                              {t(dayName)}
                             </p>
                             {day?.mealName ? (
                               <p className="text-xs text-foreground leading-snug font-medium">
@@ -222,7 +230,7 @@ function GroupPage() {
                                 rel="noreferrer"
                                 className="text-[10px] text-primary hover:underline truncate block mt-0.5"
                               >
-                                ↗ recipe
+                                ↗ {t('common.recipe')}
                               </a>
                             )}
                           </div>

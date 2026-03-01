@@ -35,7 +35,7 @@ function GroupsPage() {
       setInviteCode('')
       await load()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to join group')
+      setError(err instanceof Error ? err.message : t('common.joinFailed'))
     } finally {
       setJoining(false)
     }

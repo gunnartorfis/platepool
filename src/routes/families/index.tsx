@@ -35,7 +35,7 @@ function FamiliesPage() {
       setInviteCode('')
       await load()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to join family')
+      setError(err instanceof Error ? err.message : t('common.joinFailed'))
     } finally {
       setJoining(false)
     }

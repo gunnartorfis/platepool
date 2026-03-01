@@ -21,7 +21,9 @@
     "success": "Tókst",
     "name": "Nafn",
     "email": "Netfang",
-    "password": "Lykilorð"
+    "password": "Lykilorð",
+    "recipe": "uppskrift",
+    "joinFailed": "Mistókst að ganga í"
   },
   "auth": {
     "login": "Innskrá",
@@ -64,11 +66,13 @@
     "generating": "Bý til...",
     "notes": "Athugasemdir",
     "recipeUrl": "Recipe URL",
+    "recipeUrlPlaceholder": "https://…",
     "whatForDinner": "Hvað er fyrir kvöldverð?",
     "anyNotes": "Einhverjar athugasemdir...",
     "noPreviousDinners": "Engir fyrri kvöldverðir",
     "noPreviousUrls": "Engir fyrri recipe URLs",
-    "shareWithGroups": "Deila þessari viku með hópum"
+    "shareWithGroups": "Deila þessari viku með hópum",
+    "aiGenerationFailed": "AI myndun mistókst"
   },
   "groups": {
     "title": "Hópar",
@@ -194,13 +198,16 @@
     "constraintName": "Nafn",
     "constraintEmoji": "Tákn",
     "constraintColor": "Litur",
+    "constraintPlaceholder": "t.d. einfalt, fiskur, vegan",
     "preview": "Forskoðun",
     "dayDefaults": "Daglegar stillingar",
     "dayDefaultsDesc": "Settu sjálfgefnar takmarkanir fyrir hvern dag. Þær nota sjálfkrafa við skipulagningu.",
     "updateProfile": "Uppfæra forstillingar",
     "changePassword": "Breyta lykilorði",
     "passwordChanged": "Lykilorð breytt",
-    "selectLanguage": "Veldu tungumál"
+    "selectLanguage": "Veldu tungumál",
+    "icelandic": "Íslenska",
+    "english": "English"
   },
   "days": {
     "monday": "Mánudagur",
@@ -209,6 +216,16 @@
     "thursday": "Fimmtudagur",
     "friday": "Föstudagur",
     "saturday": "Laugardagur",
-    "sunday": "Sunnudagur"
+    "sunday": "Sunnudagur",
+    "mon": "Mán",
+    "tue": "Þri",
+    "wed": "Mið",
+    "thu": "Fim",
+    "fri": "Fös",
+    "sat": "Lau",
+    "sun": "Sun"
+  },
+  "meals": {
+    "dinner": "Kvöldverður"
   }
 }

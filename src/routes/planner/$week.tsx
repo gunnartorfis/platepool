@@ -33,7 +33,15 @@ export const Route = createFileRoute('/planner/$week')({
   component: PlannerPage,
 })
 
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DAY_NAMES = [
+  'days.mon',
+  'days.tue',
+  'days.wed',
+  'days.thu',
+  'days.fri',
+  'days.sat',
+  'days.sun',
+]
 const DAY_FULL = [
   'days.monday',
   'days.tuesday',
@@ -161,7 +169,7 @@ function DrawerForm({
           >
             <ComboboxInput
               className="w-full rounded-md"
-              placeholder="https://…"
+              placeholder={t('planner.recipeUrlPlaceholder')}
               showTrigger={false}
               onChange={(e) => setEditRecipeUrl(e.target.value)}
             />
@@ -320,7 +328,9 @@ function PlannerPage() {
       await generateMealPlan({ data: { weekStart } })
       await load()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'AI generation failed')
+      alert(
+        err instanceof Error ? err.message : t('planner.aiGenerationFailed'),
+      )
     } finally {
       setAiLoading(false)
     }
@@ -454,7 +464,7 @@ function PlannerPage() {
                       isTodayExact ? 'text-primary' : 'text-muted-foreground',
                     )}
                   >
-                    {dayName}
+                    {t(dayName)}
                   </p>
                   <p
                     className={cn(
@@ -539,7 +549,7 @@ function PlannerPage() {
                       isTodayExact ? 'text-primary' : 'text-muted-foreground',
                     )}
                   >
-                    {dayName}
+                    {t(dayName)}
                   </p>
                   <p className="text-lg font-display font-semibold leading-tight">
                     {date.getDate()}
