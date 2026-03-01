@@ -176,6 +176,8 @@
     "urlHint": "Líma inn vefslóð og við drögum út upplýsingar",
     "pasteHint": "AI skannar og dregur út upplýsingar",
     "scanning": "Skannar uppskrift...",
+    "generatingTags": "Bý til tags...",
+    "pleaseWait": "Vinsamlegast bíðið",
     "aiScanned": "AI unnið",
     "descriptionLabel": "Lýsing",
     "descriptionPlaceholder": "Athugasemdir um uppskriftina…",

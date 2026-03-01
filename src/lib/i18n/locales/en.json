@@ -176,6 +176,8 @@
     "urlHint": "Paste any recipe URL and we'll extract the details",
     "pasteHint": "AI will scan and extract recipe details",
     "scanning": "Scanning recipe...",
+    "generatingTags": "Generating tags...",
+    "pleaseWait": "Please wait",
     "aiScanned": "AI Extracted",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Notes about this recipe...",

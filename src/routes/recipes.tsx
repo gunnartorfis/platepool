@@ -32,26 +32,26 @@ type RecipeMetadata = {
   title?: string
   description?: string
   image?: string
-  keywords?: string | string[]
+  keywords?: string | Array<string>
   recipe?: {
     name?: string
     description?: string
-    image?: string | string[]
+    image?: string | Array<string>
     prepTime?: string
     cookTime?: string
     totalTime?: string
     recipeYield?: string | number
-    recipeIngredient?: string[]
-    recipeInstructions?: string[] | { text?: string }[]
+    recipeIngredient?: Array<string>
+    recipeInstructions?: Array<string> | Array<{ text?: string }>
     nutrition?: { calories?: string }
-    keywords?: string | string[]
+    keywords?: string | Array<string>
     author?: string
     publishedAt?: string
   }
 }
 
 function RecipesPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [recipes, setRecipes] = useState<Array<RecipeData>>([])
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<RecipeData | null>(null)
@@ -62,6 +62,7 @@ function RecipesPage() {
   const [tagsStr, setTagsStr] = useState('')
   const [saving, setSaving] = useState(false)
   const [fetchingMetadata, setFetchingMetadata] = useState(false)
+  const [generatingTags, setGeneratingTags] = useState(false)
   const [metadata, setMetadata] = useState<RecipeMetadata | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -155,6 +156,7 @@ function RecipesPage() {
 
           if (!tagsStr) {
             console.log('[DEBUG] No tags found in metadata, calling AI...')
+            setGeneratingTags(true)
             try {
               const aiResult = (await generateRecipeTags({
                 data: {
@@ -162,6 +164,7 @@ function RecipesPage() {
                   description: result.description || result.recipe?.description,
                   ingredients: result.recipe?.recipeIngredient,
                   url: value,
+                  language: i18n.language,
                 },
               })) as { tags?: Array<string>; error?: string }
 
@@ -175,7 +178,8 @@ function RecipesPage() {
               }
             } catch (e) {
               console.error('[DEBUG] AI error:', e)
-              // Ignore AI errors
+            } finally {
+              setGeneratingTags(false)
             }
           }
         } else {
@@ -324,6 +328,20 @@ function RecipesPage() {
                     </p>
                   </div>
 
+                  {(fetchingMetadata || generatingTags) && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                      <div className="relative w-6 h-6">
+                        <div className="absolute inset-0 rounded-full border-2 border-amber-200 border-t-amber-500 animate-spin" />
+                        <SparkleIcon className="absolute inset-0 w-4 h-4 text-amber-500 animate-pulse" />
+                      </div>
+                      <span className="text-sm text-amber-800">
+                        {generatingTags
+                          ? t('recipes.generatingTags')
+                          : t('recipes.scanning')}
+                      </span>
+                    </div>
+                  )}
+
                   {fetchError && (
                     <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
                       {fetchError}
@@ -381,6 +399,7 @@ function RecipesPage() {
                   variant="outline"
                   className="flex-1"
                   onClick={() => setShowForm(false)}
+                  disabled={saving}
                 >
                   {t('common.cancel')}
                 </Button>
@@ -388,7 +407,7 @@ function RecipesPage() {
                   type="submit"
                   form="recipe-form"
                   className="flex-1"
-                  disabled={saving}
+                  disabled={saving || fetchingMetadata || generatingTags}
                 >
                   {saving ? t('common.saving') : t('common.save')}
                 </Button>

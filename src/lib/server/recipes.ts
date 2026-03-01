@@ -3,10 +3,10 @@ import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDbWithSchema } from '../db'
 import {
+  familyMembers,
   groupFamilies,
   groupLinks,
   recipeLinks,
-  familyMembers,
 } from '../db/schema'
 import { getUser } from '../auth/get-user'
 
@@ -321,6 +321,7 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
         description: z.string().optional(),
         ingredients: z.array(z.string()).optional(),
         url: z.string().optional(),
+        language: z.string().optional(),
       })
       .parse(data),
   )
@@ -339,6 +340,8 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
 
     const ingredientsList = data.ingredients?.slice(0, 10).join(', ') || ''
     const description = data.description || ''
+    const language = data.language || 'en'
+    const languageName = language === 'is' ? 'Icelandic' : 'English'
 
     console.log(
       '[DEBUG] Calling AI with title:',
@@ -347,9 +350,11 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
       description,
       'ingredients:',
       ingredientsList,
+      'language:',
+      languageName,
     )
 
-    const prompt = `Analyze this recipe and generate 3-5 relevant tags. Consider:
+    const prompt = `Analyze this recipe and generate 3-5 relevant tags in ${languageName}. Consider:
 - Main protein/ingredient (fish, chicken, beef, vegetarian, etc.)
 - Cooking method (grilled, baked, quick, slow, etc.)
 - Dietary category (healthy, comfort, light, etc.)
@@ -360,7 +365,7 @@ Recipe: ${data.title}
 ${description ? `Description: ${description}` : ''}
 ${ingredientsList ? `Ingredients: ${ingredientsList}` : ''}
 
-Return ONLY a JSON array of strings, like ["fish", "healthy", "baked", "dinner"]. No other text.`
+Return ONLY a JSON array of strings, like ["fish", "healthy", "baked", "dinner"]. No other text. Tags MUST be in ${languageName}.`
 
     const result = await model.generateContent(prompt)
     const text = result.response.text()
