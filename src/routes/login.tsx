@@ -1,5 +1,6 @@
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { login } from '@/lib/server/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ export const Route = createFileRoute('/login')({ component: LoginPage })
 
 function LoginPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -23,7 +25,7 @@ function LoginPage() {
       await router.invalidate()
       router.navigate({ to: '/planner' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(err instanceof Error ? err.message : t('common.error'))
     } finally {
       setLoading(false)
     }
@@ -34,19 +36,19 @@ function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-display font-bold text-foreground tracking-tight mb-1">
-            Share Plate
+            {t('home.title')}
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Dinner planning for your group
-          </p>
+          <p className="text-muted-foreground text-sm">{t('home.subtitle')}</p>
         </div>
 
         <div className="bg-card border border-border rounded-lg p-8 shadow-sm">
-          <h2 className="text-lg font-display font-semibold mb-6">Sign in</h2>
+          <h2 className="text-lg font-display font-semibold mb-6">
+            {t('auth.login')}
+          </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -58,7 +60,7 @@ function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -76,17 +78,17 @@ function LoginPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? `${t('auth.login')}...` : t('auth.login')}
             </Button>
           </form>
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
-            No account?{' '}
+            {t('auth.noAccount')}{' '}
             <Link
               to="/register"
               className="text-primary font-medium hover:underline"
             >
-              Register
+              {t('auth.register')}
             </Link>
           </p>
         </div>

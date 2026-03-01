@@ -34,7 +34,8 @@
     "hasAccount": "Ertu núþegar með aðgang?",
     "currentPassword": "Núverandi lykilorð",
     "newPassword": "Nýtt lykilorð",
-    "signOut": "Skrá út"
+    "signOut": "Skrá út",
+    "minLength": "Að minnsta kosti 8 stafir"
   },
   "nav": {
     "home": "Heim",

@@ -1,5 +1,6 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Dispatch, SetStateAction } from 'react'
 import type { Constraint } from '@/lib/db/schema'
 import { AppLayout } from '@/components/layout/app-layout'
@@ -34,13 +35,13 @@ export const Route = createFileRoute('/planner/$week')({
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const DAY_FULL = [
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-  'Sunday',
+  'days.monday',
+  'days.tuesday',
+  'days.wednesday',
+  'days.thursday',
+  'days.friday',
+  'days.saturday',
+  'days.sunday',
 ]
 
 type DayPlanData = {
@@ -93,6 +94,7 @@ function DrawerForm({
   onSave,
   onClose,
 }: DrawerFormProps) {
+  const { t } = useTranslation()
   return (
     <>
       <div className="px-5 py-4 border-b border-border flex items-center justify-between shrink-0">
@@ -222,6 +224,7 @@ function DrawerForm({
 }
 
 function PlannerPage() {
+  const { t } = useTranslation()
   const { week } = Route.useParams()
   const router = useRouter()
   const weekStart = weekStartFromParam(week)

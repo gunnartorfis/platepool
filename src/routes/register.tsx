@@ -1,5 +1,6 @@
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { register } from '@/lib/server/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ export const Route = createFileRoute('/register')({ component: RegisterPage })
 
 function RegisterPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,7 +26,7 @@ function RegisterPage() {
       await router.invalidate()
       router.navigate({ to: '/planner' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed')
+      setError(err instanceof Error ? err.message : t('common.error'))
     } finally {
       setLoading(false)
     }
@@ -35,21 +37,19 @@ function RegisterPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-display font-bold text-foreground tracking-tight mb-1">
-            Share Plate
+            {t('home.title')}
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Dinner planning for your group
-          </p>
+          <p className="text-muted-foreground text-sm">{t('home.subtitle')}</p>
         </div>
 
         <div className="bg-card border border-border rounded-lg p-8 shadow-sm">
           <h2 className="text-lg font-display font-semibold mb-6">
-            Create account
+            {t('auth.register')}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t('common.name')}</Label>
               <Input
                 id="name"
                 type="text"
@@ -61,7 +61,7 @@ function RegisterPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -73,7 +73,7 @@ function RegisterPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -84,7 +84,7 @@ function RegisterPage() {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                At least 8 characters
+                {t('auth.minLength')}
               </p>
             </div>
 
@@ -95,17 +95,17 @@ function RegisterPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account…' : 'Create account'}
+              {loading ? `${t('auth.register')}...` : t('auth.register')}
             </Button>
           </form>
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
+            {t('auth.hasAccount')}{' '}
             <Link
               to="/login"
               className="text-primary font-medium hover:underline"
             >
-              Sign in
+              {t('auth.login')}
             </Link>
           </p>
         </div>

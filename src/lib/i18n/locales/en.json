@@ -34,7 +34,8 @@
     "hasAccount": "Already have an account?",
     "currentPassword": "Current password",
     "newPassword": "New password",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "minLength": "At least 8 characters"
   },
   "nav": {
     "home": "Home",
