@@ -7,6 +7,7 @@ const NAV = [
   { to: '/families', labelKey: 'nav.families', icon: FamilyIcon },
   { to: '/groups', labelKey: 'nav.groups', icon: UsersIcon },
   { to: '/links', labelKey: 'nav.links', icon: LinkIcon },
+  { to: '/constraints', labelKey: 'nav.constraints', icon: ConstraintsIcon },
   { to: '/settings', labelKey: 'nav.settings', icon: SettingsIcon },
 ]
 
@@ -161,6 +162,23 @@ function LinkIcon({ className }: { className?: string }) {
       />
       <path
         d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+function ConstraintsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.75}
+    >
+      <path d="M9 11l3 3L22 4" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
         strokeLinecap="round"
       />
     </svg>

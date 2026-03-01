@@ -45,8 +45,9 @@
     "planner": "Matseðill",
     "families": "Fjölskyldur",
     "groups": "Hópar",
-    "settings": "Stillingar",
-    "links": "Tenglar"
+    "links": "Tenglar",
+    "constraints": "Takmarkanir",
+    "settings": "Stillingar"
   },
   "home": {
     "title": "Share Plate",
