@@ -312,3 +312,56 @@ export const fetchRecipeMetadata = createServerFn({ method: 'POST' })
       return { error: 'Failed to fetch metadata' } as { [key: string]: {} }
     }
   })
+
+export const generateRecipeTags = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        title: z.string(),
+        description: z.string().optional(),
+        ingredients: z.array(z.string()).optional(),
+        url: z.string().optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data }) => {
+    const apiKey = process.env.GOOGLE_API_KEY
+    if (!apiKey) {
+      return { error: 'AI not configured' }
+    }
+
+    const { GoogleGenerativeAI } = await import('@google/generative-ai')
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' })
+
+    const ingredientsList = data.ingredients?.slice(0, 10).join(', ') || ''
+    const description = data.description || ''
+
+    const prompt = `Analyze this recipe and generate 3-5 relevant tags. Consider:
+- Main protein/ingredient (fish, chicken, beef, vegetarian, etc.)
+- Cooking method (grilled, baked, quick, slow, etc.)
+- Dietary category (healthy, comfort, light, etc.)
+- Cuisine type (italian, mexican, asian, etc.)
+- Meal type (dinner, lunch, etc.)
+
+Recipe: ${data.title}
+${description ? `Description: ${description}` : ''}
+${ingredientsList ? `Ingredients: ${ingredientsList}` : ''}
+
+Return ONLY a JSON array of strings, like ["fish", "healthy", "baked", "dinner"]. No other text.`
+
+    const result = await model.generateContent(prompt)
+    const text = result.response.text()
+
+    const jsonMatch = text.match(/\[[\s\S]*\]/)
+    if (!jsonMatch) {
+      return { error: 'AI returned invalid response' }
+    }
+
+    try {
+      const tags = JSON.parse(jsonMatch[0]) as Array<string>
+      return { tags: tags.filter((t) => typeof t === 'string').slice(0, 5) }
+    } catch {
+      return { error: 'Failed to parse AI response' }
+    }
+  })

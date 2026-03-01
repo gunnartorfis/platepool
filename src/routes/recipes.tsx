@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/layout/app-layout'
 import {
   deleteRecipe,
   fetchRecipeMetadata,
+  generateRecipeTags,
   getMyRecipes,
   saveRecipe,
 } from '@/lib/server/recipes'
@@ -149,6 +150,25 @@ function RecipesPage() {
               setTagsStr(keywords)
             } else if (Array.isArray(keywords)) {
               setTagsStr(keywords.join(', '))
+            }
+          }
+
+          if (!tagsStr) {
+            try {
+              const aiResult = (await generateRecipeTags({
+                data: {
+                  title: result.title || result.recipe?.name || '',
+                  description: result.description || result.recipe?.description,
+                  ingredients: result.recipe?.recipeIngredient,
+                  url: value,
+                },
+              })) as { tags?: Array<string>; error?: string }
+
+              if (aiResult && aiResult.tags && aiResult.tags.length > 0) {
+                setTagsStr(aiResult.tags.join(', '))
+              }
+            } catch {
+              // Ignore AI errors
             }
           }
         } else {
