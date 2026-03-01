@@ -42,7 +42,7 @@ type RecipeMetadata = {
     recipeIngredient?: string[]
     recipeInstructions?: string[] | { text?: string }[]
     nutrition?: { calories?: string }
-    keywords?: string
+    keywords?: string | string[]
     author?: string
     publishedAt?: string
   }
@@ -133,6 +133,14 @@ function RecipesPage() {
           }
           if (!description && result.recipe?.description) {
             setDescription(result.recipe.description)
+          }
+          if (!tagsStr && result.recipe?.keywords) {
+            const keywords = result.recipe.keywords
+            if (typeof keywords === 'string') {
+              setTagsStr(keywords)
+            } else if (Array.isArray(keywords)) {
+              setTagsStr(keywords.join(', '))
+            }
           }
         } else {
           setMetadata(null)
