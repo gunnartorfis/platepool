@@ -2,7 +2,13 @@ import { createServerFn } from '@tanstack/react-start'
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
-import { groupMembers, groups, users } from '../db/schema'
+import {
+  groupFamilies,
+  groups,
+  families,
+  familyMembers,
+  users,
+} from '../db/schema'
 import { getUser } from '../auth/get-user'
 
 function uid() {
@@ -16,16 +22,28 @@ function generateInviteCode(): string {
     .join('')
 }
 
+async function getUserFamilyId(userId: string): Promise<string | null> {
+  const userFamilies = await db
+    .select({ familyId: familyMembers.familyId })
+    .from(familyMembers)
+    .where(eq(familyMembers.userId, userId))
+    .limit(1)
+  return userFamilies[0]?.familyId ?? null
+}
+
 export const getMyGroups = createServerFn({ method: 'GET' }).handler(
   async () => {
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
 
+    const familyId = await getUserFamilyId(user.id)
+    if (!familyId) return []
+
     const rows = await db
-      .select({ group: groups, role: groupMembers.role })
-      .from(groupMembers)
-      .innerJoin(groups, eq(groupMembers.groupId, groups.id))
-      .where(eq(groupMembers.userId, user.id))
+      .select({ group: groups, role: groupFamilies.role })
+      .from(groupFamilies)
+      .innerJoin(groups, eq(groupFamilies.groupId, groups.id))
+      .where(eq(groupFamilies.familyId, familyId))
 
     return rows.map(({ group, role }) => ({ ...group, role }))
   },
@@ -39,6 +57,9 @@ export const createGroup = createServerFn({ method: 'POST' })
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
 
+    const familyId = await getUserFamilyId(user.id)
+    if (!familyId) throw new Error('You must be in a family to create a group')
+
     const id = uid()
     const inviteCode = generateInviteCode()
 
@@ -46,8 +67,8 @@ export const createGroup = createServerFn({ method: 'POST' })
       .insert(groups)
       .values({ id, name: data.name, createdBy: user.id, inviteCode })
     await db
-      .insert(groupMembers)
-      .values({ groupId: id, userId: user.id, role: 'admin' })
+      .insert(groupFamilies)
+      .values({ groupId: id, familyId, role: 'admin' })
 
     return { id, inviteCode }
   })
@@ -60,6 +81,9 @@ export const joinGroup = createServerFn({ method: 'POST' })
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
 
+    const familyId = await getUserFamilyId(user.id)
+    if (!familyId) throw new Error('You must be in a family to join a group')
+
     const group = await db
       .select()
       .from(groups)
@@ -70,20 +94,20 @@ export const joinGroup = createServerFn({ method: 'POST' })
 
     const existing = await db
       .select()
-      .from(groupMembers)
+      .from(groupFamilies)
       .where(
         and(
-          eq(groupMembers.groupId, group[0].id),
-          eq(groupMembers.userId, user.id),
+          eq(groupFamilies.groupId, group[0].id),
+          eq(groupFamilies.familyId, familyId),
         ),
       )
       .limit(1)
 
-    if (existing[0]) return group[0].id // already a member
+    if (existing[0]) return group[0].id
 
     await db
-      .insert(groupMembers)
-      .values({ groupId: group[0].id, userId: user.id, role: 'member' })
+      .insert(groupFamilies)
+      .values({ groupId: group[0].id, familyId, role: 'member' })
 
     return group[0].id
   })
@@ -96,13 +120,16 @@ export const getGroup = createServerFn({ method: 'GET' })
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
 
+    const familyId = await getUserFamilyId(user.id)
+    if (!familyId) throw new Error('Not a member')
+
     const membership = await db
       .select()
-      .from(groupMembers)
+      .from(groupFamilies)
       .where(
         and(
-          eq(groupMembers.groupId, data.groupId),
-          eq(groupMembers.userId, user.id),
+          eq(groupFamilies.groupId, data.groupId),
+          eq(groupFamilies.familyId, familyId),
         ),
       )
       .limit(1)
@@ -115,18 +142,17 @@ export const getGroup = createServerFn({ method: 'GET' })
     if (!group) throw new Error('Group not found')
 
     const members = await db
-      .select({ user: users, role: groupMembers.role })
-      .from(groupMembers)
-      .innerJoin(users, eq(groupMembers.userId, users.id))
-      .where(eq(groupMembers.groupId, data.groupId))
+      .select({ family: families, role: groupFamilies.role })
+      .from(groupFamilies)
+      .innerJoin(families, eq(groupFamilies.familyId, families.id))
+      .where(eq(groupFamilies.groupId, data.groupId))
 
     return {
       ...group,
       role: membership[0].role,
-      members: members.map(({ user: u, role }) => ({
-        id: u.id,
-        name: u.name,
-        email: u.email,
+      members: members.map(({ family: f, role }) => ({
+        id: f.id,
+        name: f.name,
         role,
       })),
     }
@@ -139,12 +165,16 @@ export const leaveGroup = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
+
+    const familyId = await getUserFamilyId(user.id)
+    if (!familyId) throw new Error('Not a member')
+
     await db
-      .delete(groupMembers)
+      .delete(groupFamilies)
       .where(
         and(
-          eq(groupMembers.groupId, data.groupId),
-          eq(groupMembers.userId, user.id),
+          eq(groupFamilies.groupId, data.groupId),
+          eq(groupFamilies.familyId, familyId),
         ),
       )
   })

@@ -6,6 +6,7 @@ import { currentWeekStart, getGroupFeed } from '@/lib/server/meal-plans'
 import { addLinkToGroup, getGroupLinks, getMyLinks } from '@/lib/server/links'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/groups/$groupId')({
   component: GroupPage,
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/groups/$groupId')({
 const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 function GroupPage() {
+  const { t } = useTranslation()
   const { groupId } = Route.useParams()
   const router = useRouter()
   const weekStart = currentWeekStart()
@@ -83,7 +85,7 @@ function GroupPage() {
   }
 
   async function handleLeave() {
-    if (!confirm('Leave this group?')) return
+    if (!confirm(t('groups.leaveConfirm'))) return
     setLeaving(true)
     await leaveGroup({ data: { groupId } })
     router.navigate({ to: '/groups' })
@@ -93,7 +95,7 @@ function GroupPage() {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-64 text-muted-foreground">
-          Loading…
+          {t('common.loading')}
         </div>
       </AppLayout>
     )
@@ -113,7 +115,7 @@ function GroupPage() {
               {group.name}
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Invite code:{' '}
+              {t('groups.inviteCode')}{' '}
               <span className="font-mono font-semibold text-foreground">
                 {group.inviteCode}
               </span>
@@ -125,24 +127,24 @@ function GroupPage() {
             onClick={handleLeave}
             disabled={leaving}
           >
-            Leave group
+            {t('groups.leave')}
           </Button>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-border">
-          {(['feed', 'links', 'members'] as const).map((t) => (
+          {(['feed', 'links', 'members'] as const).map((tabKey) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabKey}
+              onClick={() => setTab(tabKey)}
               className={cn(
                 'px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px',
-                tab === t
+                tab === tabKey
                   ? 'border-primary text-primary'
                   : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
-              {t}
+              {t(`groups.tabs.${tabKey}`)}
             </button>
           ))}
         </div>
@@ -151,14 +153,14 @@ function GroupPage() {
         {tab === 'feed' && (
           <div>
             <p className="text-xs text-muted-foreground mb-4">
-              Week of{' '}
+              {t('groups.feed.weekOf')}{' '}
               {new Date(weekStart + 'T12:00:00').toLocaleDateString('en-GB', {
                 day: 'numeric',
                 month: 'long',
               })}{' '}
               ·{' '}
               <Link to="/planner" className="text-primary hover:underline">
-                Go to your planner →
+                {t('groups.feed.goToPlanner')}
               </Link>
             </p>
 
@@ -183,13 +185,13 @@ function GroupPage() {
                       {user.name}
                       {isMe && (
                         <span className="ml-1.5 text-xs text-muted-foreground">
-                          (you)
+                          {t('groups.feed.you')}
                         </span>
                       )}
                     </span>
                     {days.length === 0 && (
                       <span className="ml-auto text-xs text-muted-foreground italic">
-                        Not shared yet
+                        {t('groups.feed.notShared')}
                       </span>
                     )}
                   </div>
