@@ -51,10 +51,22 @@
   "planner": {
     "title": "Matseðill",
     "addMeal": "Bæta við máltíð",
+    "addDinner": "Bæta við kvöldverð...",
     "breakfast": "Morgunmatur",
     "lunch": "Hádegisverður",
     "dinner": "Kvöldverður",
-    "week": "Vika"
+    "week": "Vika",
+    "weekOf": "Vika af",
+    "today": "Í dag",
+    "generateWithAi": "Búa til með AI",
+    "generating": "Bý til...",
+    "notes": "Athugasemdir",
+    "recipeUrl": "Recipe URL",
+    "whatForDinner": "Hvað er fyrir kvöldverð?",
+    "anyNotes": "Einhverjar athugasemdir...",
+    "noPreviousDinners": "Engir fyrri kvöldverðir",
+    "noPreviousUrls": "Engir fyrri recipe URLs",
+    "shareWithGroups": "Deila þessari viku með hópum"
   },
   "groups": {
     "title": "Hópar",

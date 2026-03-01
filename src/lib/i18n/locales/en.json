@@ -51,10 +51,22 @@
   "planner": {
     "title": "Meal Planner",
     "addMeal": "Add meal",
+    "addDinner": "Add dinner…",
     "breakfast": "Breakfast",
     "lunch": "Lunch",
     "dinner": "Dinner",
-    "week": "Week"
+    "week": "Week",
+    "weekOf": "Week of",
+    "today": "Today",
+    "generateWithAi": "Generate with AI",
+    "generating": "Generating…",
+    "notes": "Notes",
+    "recipeUrl": "Recipe URL",
+    "whatForDinner": "What's for dinner?",
+    "anyNotes": "Any notes…",
+    "noPreviousDinners": "No previous dinners",
+    "noPreviousUrls": "No previous recipe URLs",
+    "shareWithGroups": "Share this week with groups"
   },
   "groups": {
     "title": "Groups",

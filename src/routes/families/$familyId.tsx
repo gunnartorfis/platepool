@@ -220,7 +220,7 @@ function FamilyPage() {
         {/* Planner tab */}
         {tab === 'planner' && (
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <p className="text-sm text-muted-foreground">
                 Week of{' '}
                 {new Date(weekStart + 'T12:00:00').toLocaleDateString('en-GB', {
@@ -231,10 +231,10 @@ function FamilyPage() {
               {family.role === 'admin' && availableFamilies.length > 0 && (
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Type family name to share..."
+                    placeholder="Type family name..."
                     value={shareCode}
                     onChange={(e) => setShareCode(e.target.value)}
-                    className="h-8 w-48 text-sm"
+                    className="h-8 sm:w-40 text-sm"
                   />
                   <Button
                     size="sm"
@@ -274,9 +274,121 @@ function FamilyPage() {
               </div>
             )}
 
-            {/* Family meal plan grid */}
+            {/* Family meal plan grid - responsive: vertical on mobile, grid on desktop */}
             <div className="bg-card border border-border rounded-lg overflow-hidden">
-              <div className="grid grid-cols-7 divide-x divide-border">
+              {/* Mobile: stacked vertical */}
+              <div className="md:hidden divide-y divide-border">
+                {DAY_SHORT.map((dayName, dayIndex) => {
+                  const day = mealPlan.days.find(
+                    (d) => d.dayOfWeek === dayIndex,
+                  )
+                  const isEditing = editingDay === dayIndex
+
+                  return (
+                    <div key={dayIndex} className="p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {dayName}
+                        </p>
+                      </div>
+
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Meal name"
+                            value={editForm.mealName}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                mealName: e.target.value,
+                              })
+                            }
+                            className="h-9 text-sm"
+                          />
+                          <Input
+                            placeholder="Notes"
+                            value={editForm.notes}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                notes: e.target.value,
+                              })
+                            }
+                            className="h-9 text-sm"
+                          />
+                          <Input
+                            placeholder="Recipe URL"
+                            value={editForm.recipeUrl}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                recipeUrl: e.target.value,
+                              })
+                            }
+                            className="h-9 text-sm"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleSaveDay(dayIndex)}
+                              disabled={saving}
+                              className="flex-1"
+                            >
+                              {saving ? 'Saving...' : 'Save'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingDay(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => day && startEdit(day)}
+                          className={cn(
+                            'p-2 rounded-md cursor-pointer transition-colors',
+                            day?.mealName
+                              ? 'bg-primary/5 hover:bg-primary/10'
+                              : 'bg-muted/30 hover:bg-muted/50 border border-dashed border-border',
+                          )}
+                        >
+                          {day?.mealName ? (
+                            <p className="text-sm font-medium">
+                              {day.mealName}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-muted-foreground italic">
+                              Tap to add
+                            </p>
+                          )}
+                          {day?.notes && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {day.notes}
+                            </p>
+                          )}
+                          {day?.recipeUrl && (
+                            <a
+                              href={day.recipeUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-primary hover:underline mt-1 block"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              ↗ recipe
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Desktop: horizontal grid */}
+              <div className="hidden md:grid md:grid-cols-7 divide-x divide-border">
                 {DAY_SHORT.map((dayName, dayIndex) => {
                   const day = mealPlan.days.find(
                     (d) => d.dayOfWeek === dayIndex,

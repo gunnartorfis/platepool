@@ -99,7 +99,7 @@ function DrawerForm({
     <>
       <div className="px-5 py-4 border-b border-border flex items-center justify-between shrink-0">
         <h2 className="text-lg font-display font-semibold">
-          {DAY_FULL[editingDay]} dinner
+          {t(DAY_FULL[editingDay])} {t('planner.dinner')}
         </h2>
         <button
           onClick={onClose}
@@ -111,14 +111,16 @@ function DrawerForm({
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-5">
         <div>
-          <label className="text-sm font-medium mb-1.5 block">Dinner</label>
+          <label className="text-sm font-medium mb-1.5 block">
+            {t('planner.dinner')}
+          </label>
           <Combobox
             value={editMeal}
             onValueChange={(v) => setEditMeal(v ?? '')}
           >
             <ComboboxInput
               className="w-full rounded-md"
-              placeholder="What's for dinner?"
+              placeholder={t('planner.whatForDinner')}
               autoFocus
               showTrigger={false}
               onChange={(e) => setEditMeal(e.target.value)}
@@ -131,24 +133,28 @@ function DrawerForm({
                   </ComboboxItem>
                 ))}
               </ComboboxList>
-              <ComboboxEmpty>No previous dinners</ComboboxEmpty>
+              <ComboboxEmpty>{t('planner.noPreviousDinners')}</ComboboxEmpty>
             </ComboboxContent>
           </Combobox>
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-1.5 block">Notes</label>
+          <label className="text-sm font-medium mb-1.5 block">
+            {t('planner.notes')}
+          </label>
           <textarea
             className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none"
             rows={2}
-            placeholder="Any notes…"
+            placeholder={t('planner.anyNotes')}
             value={editNotes}
             onChange={(e) => setEditNotes(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-1.5 block">Recipe URL</label>
+          <label className="text-sm font-medium mb-1.5 block">
+            {t('planner.recipeUrl')}
+          </label>
           <Combobox
             value={editRecipeUrl}
             onValueChange={(v) => setEditRecipeUrl(v ?? '')}
@@ -167,7 +173,7 @@ function DrawerForm({
                   </ComboboxItem>
                 ))}
               </ComboboxList>
-              <ComboboxEmpty>No previous recipe URLs</ComboboxEmpty>
+              <ComboboxEmpty>{t('planner.noPreviousUrls')}</ComboboxEmpty>
             </ComboboxContent>
           </Combobox>
         </div>
@@ -175,7 +181,7 @@ function DrawerForm({
         {constraints.length > 0 && (
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Constraints
+              {t('settings.constraints')}
             </label>
             <div className="flex flex-wrap gap-2">
               {constraints.map((c) => {
@@ -213,10 +219,10 @@ function DrawerForm({
 
       <div className="px-5 py-4 border-t border-border flex gap-2 shrink-0">
         <Button variant="outline" className="flex-1" onClick={onClose}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button className="flex-1" onClick={onSave} disabled={saving}>
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t('common.saving') : t('common.save')}
         </Button>
       </div>
     </>
@@ -377,10 +383,10 @@ function PlannerPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
           <div>
             <h1 className="text-3xl font-display font-bold tracking-tight">
-              Dinner Planner
+              {t('planner.title')}
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">
-              Week of{' '}
+              {t('planner.weekOf')}{' '}
               {weekDates[0].toLocaleDateString('en-GB', {
                 day: 'numeric',
                 month: 'long',
@@ -400,14 +406,16 @@ function PlannerPage() {
               )}
             >
               <SparkleIcon className="w-4 h-4" />
-              {aiLoading ? 'Generating…' : 'Generate with AI'}
+              {aiLoading
+                ? t('planner.generating')
+                : t('planner.generateWithAi')}
             </Button>
             <div className="flex items-center gap-1">
               <Button variant="outline" size="icon" onClick={prevWeek}>
                 <ChevronLeftIcon className="w-4 h-4" />
               </Button>
               <Button variant="outline" size="sm" onClick={todayWeek}>
-                Today
+                {t('planner.today')}
               </Button>
               <Button variant="outline" size="icon" onClick={nextWeek}>
                 <ChevronRightIcon className="w-4 h-4" />
@@ -468,7 +476,7 @@ function PlannerPage() {
                     </p>
                   ) : (
                     <p className="text-sm text-muted-foreground/60 italic">
-                      Add dinner…
+                      {t('planner.addDinner')}
                     </p>
                   )}
                   {effectiveConstraints.length > 0 && (
@@ -545,7 +553,7 @@ function PlannerPage() {
                     </p>
                   ) : (
                     <p className="text-sm text-muted-foreground/60 italic">
-                      Add dinner…
+                      {t('planner.addDinner')}
                     </p>
                   )}
                 </div>
@@ -598,7 +606,7 @@ function PlannerPage() {
         {groups.length > 0 && (
           <div className="border border-border rounded-lg p-4 md:p-5">
             <h2 className="text-sm font-semibold mb-3 text-foreground">
-              Share this week with groups
+              {t('planner.shareWithGroups')}
             </h2>
             <div className="flex flex-wrap gap-2">
               {groups.map((g) => {
