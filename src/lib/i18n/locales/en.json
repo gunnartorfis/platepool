@@ -1,0 +1,62 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "noResults": "No results found"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "nav": {
+    "home": "Home",
+    "planner": "Planner",
+    "groups": "Groups",
+    "settings": "Settings",
+    "links": "Links"
+  },
+  "home": {
+    "title": "Share Plate",
+    "subtitle": "Plan meals together"
+  },
+  "planner": {
+    "title": "Meal Planner",
+    "addMeal": "Add meal",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "week": "Week"
+  },
+  "groups": {
+    "title": "Groups",
+    "create": "Create group",
+    "join": "Join group",
+    "leave": "Leave group",
+    "members": "Members",
+    "name": "Group name",
+    "description": "Description",
+    "noGroups": "No groups yet"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications"
+  }
+}

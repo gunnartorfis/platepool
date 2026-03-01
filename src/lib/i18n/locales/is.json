@@ -1,0 +1,62 @@
+{
+  "common": {
+    "loading": "Hleður...",
+    "error": "Villa kom upp",
+    "save": "Vista",
+    "cancel": "Hætta við",
+    "delete": "Eyða",
+    "edit": "Breyta",
+    "create": "Búa til",
+    "back": "Til baka",
+    "next": "Næsta",
+    "submit": "Senda",
+    "search": "Leita",
+    "noResults": "Engar niðurstöður"
+  },
+  "auth": {
+    "login": "Innskrá",
+    "logout": "Útskrá",
+    "register": "Nýskrá",
+    "email": "Netfang",
+    "password": "Lykilorð",
+    "confirmPassword": "Staðfesta lykilorð",
+    "forgotPassword": "Gleymt lykilorð?",
+    "noAccount": "Ertu ekki með aðgang?",
+    "hasAccount": "Ertu núþegar með aðgang?"
+  },
+  "nav": {
+    "home": "Heim",
+    "planner": "Matseðill",
+    "groups": "Hópar",
+    "settings": "Stillingar",
+    "links": "Tenglar"
+  },
+  "home": {
+    "title": "Share Plate",
+    "subtitle": "Skipuleggðu máltíðir saman"
+  },
+  "planner": {
+    "title": "Matseðill",
+    "addMeal": "Bæta við máltíð",
+    "breakfast": "Morgunmatur",
+    "lunch": "Hádegisverður",
+    "dinner": "Kvöldverður",
+    "week": "Vika"
+  },
+  "groups": {
+    "title": "Hópar",
+    "create": "Búa til hóp",
+    "join": "Ganga í hóp",
+    "leave": "Yfirgefa hóp",
+    "members": "Meðlimir",
+    "name": "Heiti hóps",
+    "description": "Lýsing",
+    "noGroups": "Enginir hópar"
+  },
+  "settings": {
+    "title": "Stillingar",
+    "language": "Tungumál",
+    "theme": "Þema",
+    "notifications": "Tilkynningar"
+  }
+}
