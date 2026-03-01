@@ -1,6 +1,7 @@
-import { Link, useRouterState } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
+import { logout } from '@/lib/server/auth'
 
 const NAV = [
   { to: '/planner', labelKey: 'nav.planner', icon: CalendarIcon },
@@ -13,6 +14,13 @@ const NAV = [
 export function Sidebar() {
   const { t } = useTranslation()
   const { location } = useRouterState()
+  const router = useRouter()
+
+  async function handleLogout() {
+    await logout()
+    await router.invalidate()
+    router.navigate({ to: '/login' })
+  }
 
   return (
     <aside className="hidden md:flex w-[220px] min-h-screen bg-sidebar text-sidebar-foreground flex-col shrink-0">
@@ -52,7 +60,14 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-sidebar-border">
+      <div className="p-3 border-t border-sidebar-border space-y-2">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-md transition-colors"
+        >
+          <LogoutIcon className="w-4 h-4" />
+          {t('auth.signOut')}
+        </button>
         <p className="text-xs text-sidebar-foreground/40 px-3">
           © {t('home.title')}
         </p>
@@ -177,6 +192,25 @@ function SettingsIcon({ className }: { className?: string }) {
     >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  )
+}
+function LogoutIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.75}
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" />
+      <polyline
+        points="16,17 21,12 16,7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" />
     </svg>
   )
 }
