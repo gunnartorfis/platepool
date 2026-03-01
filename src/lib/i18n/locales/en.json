@@ -45,8 +45,9 @@
     "planner": "Planner",
     "families": "Families",
     "groups": "Groups",
-    "settings": "Settings",
-    "links": "Links"
+    "links": "Links",
+    "constraints": "Constraints",
+    "settings": "Settings"
   },
   "home": {
     "title": "Share Plate",

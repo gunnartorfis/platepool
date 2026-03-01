@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LinksRouteImport } from './routes/links'
+import { Route as ConstraintsRouteImport } from './routes/constraints'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlannerIndexRouteImport } from './routes/planner/index'
 import { Route as GroupsIndexRouteImport } from './routes/groups/index'
@@ -41,6 +42,11 @@ const LoginRoute = LoginRouteImport.update({
 const LinksRoute = LinksRouteImport.update({
   id: '/links',
   path: '/links',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConstraintsRoute = ConstraintsRouteImport.update({
+  id: '/constraints',
+  path: '/constraints',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -91,6 +97,7 @@ const FamiliesFamilyIdRoute = FamiliesFamilyIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/constraints': typeof ConstraintsRoute
   '/links': typeof LinksRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/constraints': typeof ConstraintsRoute
   '/links': typeof LinksRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -122,6 +130,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/constraints': typeof ConstraintsRoute
   '/links': typeof LinksRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/constraints'
     | '/links'
     | '/login'
     | '/register'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/constraints'
     | '/links'
     | '/login'
     | '/register'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/constraints'
     | '/links'
     | '/login'
     | '/register'
@@ -185,6 +197,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConstraintsRoute: typeof ConstraintsRoute
   LinksRoute: typeof LinksRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
@@ -227,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/links'
       fullPath: '/links'
       preLoaderRoute: typeof LinksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/constraints': {
+      id: '/constraints'
+      path: '/constraints'
+      fullPath: '/constraints'
+      preLoaderRoute: typeof ConstraintsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -297,6 +317,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConstraintsRoute: ConstraintsRoute,
   LinksRoute: LinksRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
