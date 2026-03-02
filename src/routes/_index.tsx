@@ -262,7 +262,20 @@ function DrawerForm({
 
 function HomePage() {
   const { t } = useTranslation()
-  const MONTH_KEYS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'] as const
+  const MONTH_KEYS = [
+    'january',
+    'february',
+    'march',
+    'april',
+    'may',
+    'june',
+    'july',
+    'august',
+    'september',
+    'october',
+    'november',
+    'december',
+  ] as const
   const router = useRouter()
   const { week: weekStart } = Route.useSearch()
 
@@ -302,6 +315,7 @@ function HomePage() {
 
   const [tab, setTab] = useState<'planner' | 'members'>('planner')
   const [editingDay, setEditingDay] = useState<number | null>(null)
+  const [pendingEditDay, setPendingEditDay] = useState<number | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiModalOpen, setAiModalOpen] = useState(false)
   const [aiTimeframe, setAiTimeframe] = useState(1)
@@ -332,46 +346,53 @@ function HomePage() {
   const [editRecipeUrl, setEditRecipeUrl] = useState('')
   const [editConstraintIds, setEditConstraintIds] = useState<Array<string>>([])
 
-  async function load() {
-    try {
-      const [h, mp, cs, templates, gs, pastNames, pastUrls] = await Promise.all(
-        [
-          getMyHome(),
-          getHomeMealPlanWithSharing({ data: { weekStart } }),
-          getMyConstraints(),
-          getDayTemplates(),
-          getMySubscriptions(),
-          getPastHomeMealNames(),
-          getPastHomeRecipeUrls(),
-        ],
-      )
-      if (!h) {
-        router.navigate({ to: '/register' })
-        return
-      }
-      setHome(h as typeof home)
-      setMealPlan(mp as typeof mealPlan)
-      setConstraints(cs)
-      setDayTemplates(
-        templates.map((t) => ({
-          dayOfWeek: t.dayOfWeek,
-          constraintIds: JSON.parse(t.constraintIds) as Array<string>,
-        })),
-      )
-      setSubscriptions(gs)
-      setPastMealNames(pastNames)
-      setPastRecipeUrls(pastUrls)
+  async function load(retries = 2) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const [h, mp, cs, templates, gs, pastNames, pastUrls] =
+          await Promise.all([
+            getMyHome(),
+            getHomeMealPlanWithSharing({ data: { weekStart } }),
+            getMyConstraints(),
+            getDayTemplates(),
+            getMySubscriptions(),
+            getPastHomeMealNames(),
+            getPastHomeRecipeUrls(),
+          ])
+        if (!h) {
+          router.navigate({ to: '/register' })
+          return
+        }
+        setHome(h as typeof home)
+        setMealPlan(mp as typeof mealPlan)
+        setConstraints(cs)
+        setDayTemplates(
+          templates.map((t) => ({
+            dayOfWeek: t.dayOfWeek,
+            constraintIds: JSON.parse(t.constraintIds) as Array<string>,
+          })),
+        )
+        setSubscriptions(gs)
+        setPastMealNames(pastNames)
+        setPastRecipeUrls(pastUrls)
 
-      if (view === 'month') {
-        const mmp = await getHomeMealPlansForMonth({
-          data: { year: month.getFullYear(), month: month.getMonth() + 1 },
-        })
-        setMonthMealPlans(mmp as typeof monthMealPlans)
-      }
-    } catch (err) {
-      console.error('Failed to load home data:', err)
-      if (!home) {
-        router.navigate({ to: '/register' })
+        if (view === 'month') {
+          const mmp = await getHomeMealPlansForMonth({
+            data: { year: month.getFullYear(), month: month.getMonth() + 1 },
+          })
+          setMonthMealPlans(mmp as typeof monthMealPlans)
+        }
+        return
+      } catch (err) {
+        console.error(`Load attempt ${attempt + 1} failed:`, err)
+        if (attempt === retries) {
+          console.error('Failed to load home data after retries:', err)
+          if (!home) {
+            router.navigate({ to: '/register' })
+          }
+        } else {
+          await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)))
+        }
       }
     }
   }
@@ -379,6 +400,13 @@ function HomePage() {
   useEffect(() => {
     load()
   }, [weekStart, view, month])
+
+  useEffect(() => {
+    if (pendingEditDay !== null && mealPlan) {
+      openEdit(pendingEditDay)
+      setPendingEditDay(null)
+    }
+  }, [mealPlan, pendingEditDay])
 
   async function handleSaveDay() {
     if (!mealPlan || editingDay === null) return
@@ -835,17 +863,20 @@ function HomePage() {
         {tab === 'planner' && view === 'month' && (
           <div className="mb-6">
             <p className="text-sm text-muted-foreground mb-4">
-              {t(`months.${MONTH_KEYS[month.getMonth()]}`)} {month.getFullYear()}
+              {t(`months.${MONTH_KEYS[month.getMonth()]}`)}{' '}
+              {month.getFullYear()}
             </p>
             <div className="grid grid-cols-7 gap-1 md:gap-2">
-              {(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const).map((day) => (
-                <div
-                  key={day}
-                  className="text-center text-xs font-medium text-muted-foreground py-2"
-                >
-                  {t(`days.${day}`)}
-                </div>
-              ))}
+              {(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const).map(
+                (day) => (
+                  <div
+                    key={day}
+                    className="text-center text-xs font-medium text-muted-foreground py-2"
+                  >
+                    {t(`days.${day}`)}
+                  </div>
+                ),
+              )}
               {Array.from({ length: 42 }, (_, i) => {
                 const firstOfMonth = new Date(
                   month.getFullYear(),
@@ -872,7 +903,7 @@ function HomePage() {
                   weekStart.getDate() - ((currentDate.getDay() + 6) % 7),
                 )
                 const weekStartStr = weekStart.toISOString().slice(0, 10)
-                const dayOfWeek = currentDate.getDay()
+                const dayOfWeek = (currentDate.getDay() + 6) % 7
                 const weekDays = monthMealPlans[weekStartStr]
                 const dayData = weekDays?.find((d) => d.dayOfWeek === dayOfWeek)
                 const isGenerating = isDateBeingGenerated(currentDate)
@@ -881,12 +912,11 @@ function HomePage() {
                   <button
                     key={i}
                     onClick={() => {
-                      const d = new Date(weekStart)
-                      d.setDate(d.getDate() - ((currentDate.getDay() + 6) % 7))
-                      openEdit(dayOfWeek)
+                      const appDay = (currentDate.getDay() + 6) % 7
+                      setPendingEditDay(appDay)
                       router.navigate({
                         to: '/',
-                        search: { week: d.toISOString().slice(0, 10) },
+                        search: { week: weekStartStr },
                       })
                     }}
                     className={cn(
@@ -943,8 +973,9 @@ function HomePage() {
         {tab === 'planner' && view === 'week' && (
           <div>
             <p className="text-sm text-muted-foreground mb-4">
-              {t('home.weekOf')}{' '}
-              {weekDates[0].getDate()}. {t(`months.${MONTH_KEYS[weekDates[0].getMonth()]}`)} {weekDates[0].getFullYear()}
+              {t('home.weekOf')} {weekDates[0].getDate()}.{' '}
+              {t(`months.${MONTH_KEYS[weekDates[0].getMonth()]}`)}{' '}
+              {weekDates[0].getFullYear()}
             </p>
 
             {/* Mobile: vertical day list */}

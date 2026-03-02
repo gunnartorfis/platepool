@@ -347,6 +347,19 @@ const UpsertHomeDayInput = z.object({
   constraintIds: z.array(z.string()).optional(),
 })
 
+const UpsertHomeDaysInput = z.object({
+  days: z.array(
+    z.object({
+      weekStart: z.string(),
+      dayOfWeek: z.number().min(0).max(6),
+      mealName: z.string().optional(),
+      notes: z.string().optional(),
+      recipeUrl: z.string().optional(),
+      constraintIds: z.array(z.string()).optional(),
+    }),
+  ),
+})
+
 export const upsertHomeDayPlan = createServerFn({ method: 'POST' })
   .inputValidator((data: unknown) => UpsertHomeDayInput.parse(data))
   .handler(async ({ data }) => {
@@ -418,6 +431,111 @@ export const upsertHomeDayPlan = createServerFn({ method: 'POST' })
         recipeUrl: data.recipeUrl ?? null,
         constraintIds: JSON.stringify(data.constraintIds ?? []),
       })
+    }
+
+    return { success: true }
+  })
+
+export const upsertHomeDayPlansBatch = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => UpsertHomeDaysInput.parse(data))
+  .handler(async ({ data }) => {
+    const db = await getDbWithSchema()
+    const user = await getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    const membership = await db
+      .select()
+      .from(familyMembers)
+      .where(eq(familyMembers.userId, user.id))
+      .limit(1)
+    if (!membership[0]) throw new Error('Not a member of any home')
+
+    const weekStarts = [...new Set(data.days.map((d) => d.weekStart))]
+
+    const existingPlans = await db
+      .select()
+      .from(familyMealPlans)
+      .where(
+        and(
+          eq(familyMealPlans.familyId, membership[0].familyId),
+          inArray(familyMealPlans.weekStart, weekStarts),
+        ),
+      )
+
+    const planMap = new Map(existingPlans.map((p) => [p.weekStart, p]))
+
+    const plansToCreate = weekStarts.filter((ws) => !planMap.has(ws))
+    for (const ws of plansToCreate) {
+      const id = uid()
+      await db.insert(familyMealPlans).values({
+        id,
+        familyId: membership[0].familyId,
+        weekStart: ws,
+      })
+      planMap.set(ws, {
+        id,
+        familyId: membership[0].familyId,
+        weekStart: ws,
+        createdAt: new Date(),
+      })
+    }
+
+    const daysByPlan = new Map<string, typeof data.days>()
+    for (const day of data.days) {
+      const plan = planMap.get(day.weekStart)
+      if (!plan) continue
+      const key = plan.id
+      if (!daysByPlan.has(key)) {
+        daysByPlan.set(key, [])
+      }
+      daysByPlan.get(key)!.push(day)
+    }
+
+    for (const [planId, days] of daysByPlan) {
+      const existingDays = await db
+        .select()
+        .from(familyDayPlans)
+        .where(eq(familyDayPlans.familyMealPlanId, planId))
+
+      const existingByDay = new Map(existingDays.map((d) => [d.dayOfWeek, d]))
+
+      const toUpdate: typeof days = []
+      const toInsert: typeof days = []
+
+      for (const day of days) {
+        if (existingByDay.has(day.dayOfWeek)) {
+          toUpdate.push(day)
+        } else {
+          toInsert.push(day)
+        }
+      }
+
+      for (const day of toUpdate) {
+        const existing = existingByDay.get(day.dayOfWeek)!
+        await db
+          .update(familyDayPlans)
+          .set({
+            mealName: day.mealName ?? null,
+            notes: day.notes ?? null,
+            recipeUrl: day.recipeUrl ?? null,
+            constraintIds: JSON.stringify(day.constraintIds ?? []),
+          })
+          .where(eq(familyDayPlans.id, existing.id))
+      }
+
+      if (toInsert.length > 0) {
+        await db.insert(familyDayPlans).values(
+          toInsert.map((day) => ({
+            id: uid(),
+            familyMealPlanId: planId,
+            dayOfWeek: day.dayOfWeek,
+            mealName: day.mealName ?? null,
+            notes: day.notes ?? null,
+            recipeUrl: day.recipeUrl ?? null,
+            constraintIds: JSON.stringify(day.constraintIds ?? []),
+          })),
+        )
+      }
     }
 
     return { success: true }

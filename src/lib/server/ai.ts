@@ -12,7 +12,7 @@ import {
   recipeLinks,
 } from '../db/schema'
 import { getUser } from '../auth/get-user'
-import { upsertHomeDayPlan } from './homes'
+import { upsertHomeDayPlansBatch } from './homes'
 
 const DAY_NAMES = [
   'Monday',
@@ -24,7 +24,7 @@ const DAY_NAMES = [
   'Sunday',
 ]
 
-const MAX_VALIDATION_LOOPS = 3
+const MAX_VALIDATION_LOOPS = 1
 
 interface ValidationIssue {
   type: 'similarity' | 'frequency' | 'constraint'
@@ -119,8 +119,36 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
       .from(dayTemplates)
       .where(eq(dayTemplates.userId, user.id))
 
-    // Build constraint map
+    // Build constraint map (custom constraints from DB + preset constraints)
     const constraintMap = new Map(userConstraints.map((c) => [c.id, c]))
+
+    // Add preset constraints to the map so AI can resolve names like "preset-fish" -> "Fish"
+    const PRESET_CONSTRAINTS: Record<
+      string,
+      { name: string; frequency?: string }
+    > = {
+      'preset-fish': { name: 'Fish', frequency: '2' },
+      'preset-simple': { name: 'Simple' },
+      'preset-vegetarian': { name: 'Vegetarian', frequency: '2' },
+      'preset-vegan': { name: 'Vegan', frequency: '1' },
+      'preset-healthy': { name: 'Healthy' },
+      'preset-quick': { name: 'Quick' },
+      'preset-budget': { name: 'Budget-friendly' },
+      'preset-new': { name: 'NEW', frequency: '1' },
+    }
+    for (const [id, preset] of Object.entries(PRESET_CONSTRAINTS)) {
+      if (!constraintMap.has(id)) {
+        constraintMap.set(id, {
+          id,
+          userId: '',
+          name: preset.name,
+          type: 'regular',
+          color: '',
+          emoji: '',
+          frequency: preset.frequency ?? null,
+        })
+      }
+    }
 
     // Find constraint IDs that are type "new"
     const newConstraintIds = new Set(
@@ -309,17 +337,14 @@ ${issueMessages}
 Please regenerate the meal plan addressing these issues.`
     }
 
-    for (const item of parsed) {
-      const weekStart = getWeekStart(item.week)
-      await upsertHomeDayPlan({
-        data: {
-          weekStart,
-          dayOfWeek: item.day,
-          mealName: item.meal_name,
-          constraintIds: [],
-        },
-      })
-    }
+    const daysToInsert = parsed.map((item) => ({
+      weekStart: getWeekStart(item.week),
+      dayOfWeek: item.day,
+      mealName: item.meal_name,
+      constraintIds: [],
+    }))
+
+    await upsertHomeDayPlansBatch({ data: { days: daysToInsert } })
 
     return parsed
   })
