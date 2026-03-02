@@ -5,8 +5,7 @@ import {
   redirect,
 } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+
 import appCss from '../styles.css?url'
 import '@/lib/i18n'
 import { getUser } from '@/lib/auth/get-user'
@@ -51,15 +50,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body suppressHydrationWarning>
         {children}
-        <TanStackDevtools
-          config={{ position: 'bottom-right' }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
         <Scripts />
       </body>
     </html>
