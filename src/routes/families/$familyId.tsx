@@ -1,19 +1,19 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@/components/layout/app-layout'
 import { getFamily, getMyFamilies } from '@/lib/server/families'
 import { currentWeekStart } from '@/lib/server/meal-plans'
 import {
   getFamilyMealPlan,
+  getSharedFamilyMealPlans,
   shareFamilyMealPlan,
   unshareFamilyMealPlan,
-  getSharedFamilyMealPlans,
   upsertFamilyDayPlan,
 } from '@/lib/server/family-meal-plans'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/families/$familyId')({
   component: FamilyPage,
@@ -56,7 +56,7 @@ function FamilyPage() {
   const [mealPlan, setMealPlan] = useState<{
     plan: { id: string; weekStart: string }
     days: Array<MealPlanDay>
-    sharedWithFamilyIds: string[]
+    sharedWithFamilyIds: Array<string>
     role: string
   } | null>(null)
   const [sharedPlans, setSharedPlans] = useState<

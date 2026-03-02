@@ -1,30 +1,31 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { Constraint } from '@/lib/db/schema'
+import type { Dispatch, SetStateAction } from 'react'
 import { AppLayout } from '@/components/layout/app-layout'
 import {
-  getMyHome,
-  updateHomeName,
   getHomeMealPlanWithSharing,
-  upsertHomeDayPlan,
-  shareHomeMealPlan,
-  unshareHomeMealPlan,
+  getHomeMealPlansForMonth,
+  getMyHome,
   getPastHomeMealNames,
   getPastHomeRecipeUrls,
+  shareHomeMealPlan,
+  unshareHomeMealPlan,
+  updateHomeName,
+  upsertHomeDayPlan,
 } from '@/lib/server/homes'
 import { generateMealPlan } from '@/lib/server/ai'
-import { getMyConstraints, getDayTemplates } from '@/lib/server/constraints'
+import { getDayTemplates, getMyConstraints } from '@/lib/server/constraints'
 import { getMyGroups } from '@/lib/server/groups'
 import {
   currentWeekStart,
   isoWeek,
   weekStartFromParam,
 } from '@/lib/server/meal-plans'
-import type { Constraint } from '@/lib/db/schema'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { useTranslation } from 'react-i18next'
-import type { Dispatch, SetStateAction } from 'react'
 import {
   Combobox,
   ComboboxContent,
@@ -247,6 +248,11 @@ function HomePage() {
   const router = useRouter()
   const { week: weekStart } = Route.useSearch()
 
+  const [view, setViewState] = useState<'week' | 'month'>('week')
+  const [month, setMonthState] = useState(
+    () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  )
+
   const [home, setHome] = useState<{
     id: string
     name: string
@@ -261,6 +267,10 @@ function HomePage() {
     role: string
     sharedFamilyIds: Array<string>
   } | null>(null)
+
+  const [monthMealPlans, setMonthMealPlans] = useState<
+    Record<string, Array<MealPlanDay>>
+  >({})
 
   const [constraints, setConstraints] = useState<Array<Constraint>>([])
   const [dayTemplates, setDayTemplates] = useState<
@@ -312,6 +322,13 @@ function HomePage() {
       setGroups(gs)
       setPastMealNames(pastNames)
       setPastRecipeUrls(pastUrls)
+
+      if (view === 'month') {
+        const mmp = await getHomeMealPlansForMonth({
+          data: { year: month.getFullYear(), month: month.getMonth() + 1 },
+        })
+        setMonthMealPlans(mmp as typeof monthMealPlans)
+      }
     } catch (err) {
       console.error('Failed to load home data:', err)
     }
@@ -319,7 +336,7 @@ function HomePage() {
 
   useEffect(() => {
     load()
-  }, [weekStart])
+  }, [weekStart, view, month])
 
   async function handleSaveDay() {
     if (!mealPlan || editingDay === null) return
@@ -418,6 +435,28 @@ function HomePage() {
     })
   }
 
+  const prevMonth = () => {
+    const d = new Date(month)
+    d.setMonth(d.getMonth() - 1)
+    setMonthState(d)
+  }
+  const nextMonth = () => {
+    const d = new Date(month)
+    d.setMonth(d.getMonth() + 1)
+    setMonthState(d)
+  }
+  const todayMonth = () => {
+    setMonthState(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+  }
+
+  const setView = (newView: 'week' | 'month') => {
+    setViewState(newView)
+    if (newView === 'month') {
+      const d = new Date(weekStart)
+      setMonthState(new Date(d.getFullYear(), d.getMonth(), 1))
+    }
+  }
+
   const weekDates = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart + 'T12:00:00')
     d.setDate(d.getDate() + i)
@@ -434,6 +473,8 @@ function HomePage() {
       date.getFullYear() === today.getFullYear()
     )
   }
+
+  const isPastWeek = weekStart < currentWeekStart()
 
   if (!home || !mealPlan) {
     return (
@@ -505,7 +546,7 @@ function HomePage() {
             <Button
               variant="default"
               onClick={handleAiGenerate}
-              disabled={aiLoading}
+              disabled={aiLoading || isPastWeek}
               className={cn(
                 'gap-2 flex-1 md:flex-none',
                 aiLoading && 'ai-loading',
@@ -517,15 +558,55 @@ function HomePage() {
                 : t('planner.generateWithAi')}
             </Button>
             <div className="flex items-center gap-1">
-              <Button variant="outline" size="icon" onClick={prevWeek}>
-                <ChevronLeftIcon className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={todayWeek}>
-                {t('planner.today')}
-              </Button>
-              <Button variant="outline" size="icon" onClick={nextWeek}>
-                <ChevronRightIcon className="w-4 h-4" />
-              </Button>
+              {view === 'month' ? (
+                <>
+                  <Button variant="outline" size="icon" onClick={prevMonth}>
+                    <ChevronLeftIcon className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={todayMonth}>
+                    {t('planner.today')}
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={nextMonth}>
+                    <ChevronRightIcon className="w-4 h-4" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" size="icon" onClick={prevWeek}>
+                    <ChevronLeftIcon className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={todayWeek}>
+                    {t('planner.today')}
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={nextWeek}>
+                    <ChevronRightIcon className="w-4 h-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+            <div className="flex items-center border border-border rounded-md overflow-hidden">
+              <button
+                onClick={() => setView('week')}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-medium transition-colors',
+                  view === 'week'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {t('planner.week')}
+              </button>
+              <button
+                onClick={() => setView('month')}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-medium transition-colors',
+                  view === 'month'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {t('planner.month')}
+              </button>
             </div>
           </div>
         </div>
@@ -549,7 +630,106 @@ function HomePage() {
         </div>
 
         {/* Planner tab */}
-        {tab === 'planner' && (
+        {tab === 'planner' && view === 'month' && (
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground mb-4">
+              {month.toLocaleDateString('en-GB', {
+                month: 'long',
+                year: 'numeric',
+              })}
+            </p>
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-xs font-medium text-muted-foreground py-2"
+                >
+                  {day}
+                </div>
+              ))}
+              {Array.from({ length: 42 }, (_, i) => {
+                const firstOfMonth = new Date(
+                  month.getFullYear(),
+                  month.getMonth(),
+                  1,
+                )
+                const startOffset = (firstOfMonth.getDay() + 6) % 7
+                const dayNum = i - startOffset + 1
+                const currentDate = new Date(
+                  month.getFullYear(),
+                  month.getMonth(),
+                  dayNum,
+                )
+                const isCurrentMonth =
+                  currentDate.getMonth() === month.getMonth()
+                const today = new Date()
+                const isToday =
+                  currentDate.getDate() === today.getDate() &&
+                  currentDate.getMonth() === today.getMonth() &&
+                  currentDate.getFullYear() === today.getFullYear()
+
+                const weekStart = new Date(currentDate)
+                weekStart.setDate(
+                  weekStart.getDate() - ((currentDate.getDay() + 6) % 7),
+                )
+                const weekStartStr = weekStart.toISOString().slice(0, 10)
+                const dayOfWeek = currentDate.getDay()
+                const weekDays = monthMealPlans[weekStartStr]
+                const dayData = weekDays?.find((d) => d.dayOfWeek === dayOfWeek)
+
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      const d = new Date(weekStart)
+                      router.navigate({
+                        to: '/',
+                        search: { week: d.toISOString().slice(0, 10) },
+                      })
+                    }}
+                    className={cn(
+                      'min-h-[60px] md:min-h-[80px] p-1.5 md:p-2 rounded-md border text-left transition-all',
+                      isCurrentMonth ? 'bg-card' : 'bg-muted/30',
+                      isToday
+                        ? 'border-primary/60 ring-1 ring-primary/20'
+                        : 'border-border hover:border-border/80',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'text-xs md:text-sm font-medium',
+                        isCurrentMonth
+                          ? 'text-foreground'
+                          : 'text-muted-foreground/50',
+                        isToday && 'text-primary',
+                      )}
+                    >
+                      {dayNum > 0 &&
+                      dayNum <=
+                        new Date(
+                          month.getFullYear(),
+                          month.getMonth() + 1,
+                          0,
+                        ).getDate()
+                        ? dayNum
+                        : ''}
+                    </span>
+                    {dayData?.mealName && isCurrentMonth && (
+                      <p className="text-[10px] md:text-xs font-medium text-foreground mt-0.5 line-clamp-2">
+                        {dayData.mealName}
+                      </p>
+                    )}
+                    {dayData?.recipeUrl && isCurrentMonth && (
+                      <ExternalLinkIcon className="w-2.5 h-2.5 text-muted-foreground mt-0.5" />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {tab === 'planner' && view === 'week' && (
           <div>
             <p className="text-sm text-muted-foreground mb-4">
               {t('home.weekOf')}{' '}
@@ -792,7 +972,6 @@ function HomePage() {
           </div>
         )}
 
-        {/* Members tab */}
         {tab === 'members' && (
           <div className="space-y-2">
             {home.members.map((member) => (
@@ -856,7 +1035,7 @@ function HomePage() {
           </div>
 
           {/* Desktop: right panel */}
-          <div className="hidden md:flex fixed right-0 top-0 bottom-0 w-full max-w-md bg-card border-l border-border flex-col shadow-2xl z-50">
+          <div className="hidden md:flex fixed right-0 top-0 bottom-0 w-full max-w-md bg-card border-l border-border flex-col shadow-2xl z-[70]">
             <DrawerForm
               editingDay={editingDay}
               editMeal={editMeal}

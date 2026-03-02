@@ -23,7 +23,7 @@ function LoginPage() {
     try {
       await login({ data: { email, password } })
       await router.invalidate()
-      router.navigate({ to: '/planner' })
+      router.navigate({ to: '/' })
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'))
     } finally {

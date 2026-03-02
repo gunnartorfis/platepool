@@ -1,10 +1,10 @@
-import type { User } from '@/lib/db/schema'
 import { MobileNav, Sidebar } from './sidebar'
+import type { User } from '@/lib/db/schema'
 import { Route as RootRoute } from '@/routes/__root'
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const context = RootRoute.useRouteContext()
-  const user = context.user as User | null
+  const user = context.user
 
   return (
     <div className="flex min-h-screen">

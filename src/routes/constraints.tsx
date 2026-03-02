@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import EmojiPicker from 'emoji-picker-react'
 import { AppLayout } from '@/components/layout/app-layout'
@@ -13,6 +13,16 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/constraints')({
@@ -47,12 +57,14 @@ const DEFAULT_CONSTRAINTS: Array<{
   nameKey: string
   emoji: string
   color: string
+  frequency?: string
 }> = [
   {
     id: 'preset-fish',
     nameKey: 'constraints.defaults.fish',
     emoji: '🐟',
     color: '#3498db',
+    frequency: '2',
   },
   {
     id: 'preset-simple',
@@ -65,12 +77,14 @@ const DEFAULT_CONSTRAINTS: Array<{
     nameKey: 'constraints.defaults.vegetarian',
     emoji: '🥗',
     color: '#2ecc71',
+    frequency: '2',
   },
   {
     id: 'preset-vegan',
     nameKey: 'constraints.defaults.vegan',
     emoji: '🌱',
     color: '#27ae60',
+    frequency: '1',
   },
   {
     id: 'preset-healthy',
@@ -91,6 +105,13 @@ const DEFAULT_CONSTRAINTS: Array<{
     color: '#e91e63',
   },
   {
+    id: 'preset-quick',
+    nameKey: 'constraints.defaults.quick',
+    emoji: '🥪',
+    color: '#607d8b',
+    frequency: '1',
+  },
+  {
     id: 'preset-new',
     nameKey: 'constraints.defaults.new',
     emoji: '🆕',
@@ -103,6 +124,7 @@ type Constraint = {
   name: string
   color: string
   emoji: string | null
+  frequency: string | null
   isPreset?: boolean
 }
 
@@ -120,11 +142,15 @@ function ConstraintsPage() {
   const [cName, setCName] = useState('')
   const [cColor, setCColor] = useState(PRESET_COLORS[0])
   const [cEmoji, setCEmoji] = useState('')
+  const [cFrequency, setCFrequency] = useState('')
   const [cSaving, setCsaving] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const emojiPickerRef = useRef<HTMLDivElement>(null)
 
   const [openDay, setOpenDay] = useState<number | null>(null)
+  const [constraintToDelete, setConstraintToDelete] = useState<string | null>(
+    null,
+  )
   const popoverRef = useRef<HTMLDivElement>(null)
 
   const presets: Array<Constraint> = DEFAULT_CONSTRAINTS.map((dc) => ({
@@ -132,6 +158,7 @@ function ConstraintsPage() {
     name: t(dc.nameKey),
     emoji: dc.emoji,
     color: dc.color,
+    frequency: dc.frequency ?? null,
     isPreset: true,
   }))
 
@@ -199,6 +226,7 @@ function ConstraintsPage() {
     setCName('')
     setCColor(PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)])
     setCEmoji('')
+    setCFrequency('')
     setShowModal(true)
   }
 
@@ -208,6 +236,7 @@ function ConstraintsPage() {
     setCName(c.name)
     setCColor(c.color)
     setCEmoji(c.emoji ?? '')
+    setCFrequency(c.frequency ?? '')
     setShowModal(true)
     setOpenDay(null)
   }
@@ -217,6 +246,7 @@ function ConstraintsPage() {
     setEditingId(null)
     setCName('')
     setCEmoji('')
+    setCFrequency('')
     setShowEmojiPicker(false)
   }
 
@@ -230,6 +260,7 @@ function ConstraintsPage() {
           name: cName,
           color: cColor,
           emoji: cEmoji || undefined,
+          frequency: cFrequency || undefined,
         },
       })
       closeModal()
@@ -239,10 +270,11 @@ function ConstraintsPage() {
     }
   }
 
-  async function handleDeleteConstraint(id: string) {
-    if (!confirm(t('common.deleteConfirm'))) return
-    await deleteConstraint({ data: { id } })
+  async function confirmDeleteConstraint() {
+    if (!constraintToDelete) return
+    await deleteConstraint({ data: { id: constraintToDelete } })
     await loadConstraints()
+    setConstraintToDelete(null)
   }
 
   async function toggleDayConstraint(dayOfWeek: number, constraintId: string) {
@@ -302,6 +334,11 @@ function ConstraintsPage() {
                             >
                               {c.emoji && <span>{c.emoji}</span>}
                               {c.name}
+                              {c.frequency && (
+                                <span className="opacity-70 ml-0.5">
+                                  {c.frequency}×/wk
+                                </span>
+                              )}
                               <span className="ml-0.5">×</span>
                             </button>
                           ))}
@@ -388,10 +425,15 @@ function ConstraintsPage() {
                   >
                     {c.emoji && <span>{c.emoji}</span>}
                     {c.name}
+                    {c.frequency && (
+                      <span className="opacity-70 ml-0.5">
+                        {c.frequency}×/wk
+                      </span>
+                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleDeleteConstraint(c.id)
+                        setConstraintToDelete(c.id)
                       }}
                       className="ml-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity text-xs"
                     >
@@ -483,6 +525,28 @@ function ConstraintsPage() {
                   </div>
                 </div>
 
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    {t('settings.constraintFrequency')}
+                  </label>
+                  <select
+                    value={cFrequency}
+                    onChange={(e) => setCFrequency(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">
+                      {t('settings.constraintFrequencyNone')}
+                    </option>
+                    <option value="1">1× {t('settings.perWeek')}</option>
+                    <option value="2">2× {t('settings.perWeek')}</option>
+                    <option value="3">3× {t('settings.perWeek')}</option>
+                    <option value="4">4× {t('settings.perWeek')}</option>
+                    <option value="5">5× {t('settings.perWeek')}</option>
+                    <option value="6">6× {t('settings.perWeek')}</option>
+                    <option value="7">7× {t('settings.perWeek')}</option>
+                  </select>
+                </div>
+
                 {cName && (
                   <div>
                     <label className="text-sm font-medium mb-2 block">
@@ -498,6 +562,11 @@ function ConstraintsPage() {
                     >
                       {cEmoji && <span>{cEmoji}</span>}
                       {cName}
+                      {cFrequency && (
+                        <span className="opacity-70 ml-0.5">
+                          {cFrequency}×/wk
+                        </span>
+                      )}
                     </span>
                   </div>
                 )}
@@ -518,6 +587,28 @@ function ConstraintsPage() {
             </div>
           </div>
         )}
+
+        <AlertDialog
+          open={!!constraintToDelete}
+          onOpenChange={(open) => {
+            if (!open) setConstraintToDelete(null)
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('common.deleteConfirm')}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('constraints.defaults.deleteWarning')}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteConstraint}>
+                {t('common.delete')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   )

@@ -3,11 +3,11 @@ import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDbWithSchema } from '../db'
 import {
+  families,
   familyDayPlans,
   familyMealPlans,
   familyMembers,
   familyShares,
-  families,
 } from '../db/schema'
 import { getUser } from '../auth/get-user'
 

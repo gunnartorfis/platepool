@@ -1,10 +1,10 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@/components/layout/app-layout'
 import { getMyFamilies, joinFamily } from '@/lib/server/families'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/families/')({ component: FamiliesPage })
 

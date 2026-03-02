@@ -23,6 +23,7 @@ const SaveConstraintInput = z.object({
   name: z.string().min(1),
   color: z.string(),
   emoji: z.string().optional(),
+  frequency: z.string().optional(),
 })
 
 export const saveConstraint = createServerFn({ method: 'POST' })
@@ -35,7 +36,12 @@ export const saveConstraint = createServerFn({ method: 'POST' })
     if (data.id) {
       await db
         .update(constraints)
-        .set({ name: data.name, color: data.color, emoji: data.emoji ?? null })
+        .set({
+          name: data.name,
+          color: data.color,
+          emoji: data.emoji ?? null,
+          frequency: data.frequency ?? null,
+        })
         .where(
           and(eq(constraints.id, data.id), eq(constraints.userId, user.id)),
         )
@@ -48,6 +54,7 @@ export const saveConstraint = createServerFn({ method: 'POST' })
         name: data.name,
         color: data.color,
         emoji: data.emoji ?? null,
+        frequency: data.frequency ?? null,
       })
       return id
     }

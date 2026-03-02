@@ -1,5 +1,6 @@
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@/components/layout/app-layout'
 import { getGroup, leaveGroup } from '@/lib/server/groups'
 import { currentWeekStart, getGroupFeed } from '@/lib/server/meal-plans'
@@ -10,7 +11,6 @@ import {
 } from '@/lib/server/recipes'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/groups/$groupId')({
   component: GroupPage,
@@ -170,7 +170,7 @@ function GroupPage() {
                 month: 'long',
               })}{' '}
               ·{' '}
-              <Link to="/planner" className="text-primary hover:underline">
+              <Link to="/" className="text-primary hover:underline">
                 {t('groups.feed.goToPlanner')}
               </Link>
             </p>

@@ -1,11 +1,11 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@/components/layout/app-layout'
 import { createFamily } from '@/lib/server/families'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/families/new')({
   component: NewFamilyPage,

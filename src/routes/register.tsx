@@ -45,7 +45,7 @@ function RegisterPage() {
     try {
       await createHome({ data: { name: homeName } })
       await router.invalidate()
-      router.navigate({ to: '/planner' })
+      router.navigate({ to: '/' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create home')
     } finally {
@@ -60,7 +60,7 @@ function RegisterPage() {
     try {
       await joinHome({ data: { inviteCode } })
       await router.invalidate()
-      router.navigate({ to: '/planner' })
+      router.navigate({ to: '/' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to join home')
     } finally {

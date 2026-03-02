@@ -34,7 +34,7 @@ export const Route = createRootRoute({
       throw redirect({ to: '/login' })
     }
     if (user && isPublic) {
-      throw redirect({ to: '/planner' })
+      throw redirect({ to: '/' })
     }
 
     return { user: user }
@@ -49,7 +49,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <TanStackDevtools
           config={{ position: 'bottom-right' }}

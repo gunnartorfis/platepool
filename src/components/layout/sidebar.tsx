@@ -1,5 +1,12 @@
 import { Link, useRouter, useRouterState } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  ArrowDown01Icon,
+  LanguageCircleIcon,
+  LogoutIcon,
+  SettingsIcon as SettingsIconOutline,
+} from '@hugeicons/core-free-icons'
 import type { User } from '@/lib/db/schema'
 import { cn } from '@/lib/utils'
 import { logout } from '@/lib/server/auth'
@@ -16,13 +23,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { HugeiconsIcon } from '@hugeicons/react'
-import {
-  ArrowDown01Icon,
-  LogoutIcon,
-  SettingsIcon as SettingsIconOutline,
-  LanguageCircleIcon,
-} from '@hugeicons/core-free-icons'
 
 const NAV = [
   { to: '/', labelKey: 'nav.home', icon: HomeIcon },

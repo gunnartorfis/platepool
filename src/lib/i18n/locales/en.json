@@ -77,6 +77,7 @@
     "lunch": "Lunch",
     "dinner": "Dinner",
     "week": "Week",
+    "month": "Month",
     "weekOf": "Week of",
     "today": "Today",
     "generateWithAi": "Generate with AI",
@@ -188,7 +189,10 @@
     "passwordChanged": "Password changed successfully",
     "selectLanguage": "Select language",
     "icelandic": "Icelandic",
-    "english": "English"
+    "english": "English",
+    "constraintFrequency": "Frequency",
+    "constraintFrequencyNone": "No limit",
+    "perWeek": "/week"
   },
   "days": {
     "monday": "Monday",
@@ -218,8 +222,10 @@
       "healthy": "Healthy",
       "comfort": "Comfort food",
       "kidFriendly": "Kid-friendly",
+      "quick": "Quick & easy",
       "new": "Something new",
-      "create": "New"
+      "create": "New",
+      "deleteWarning": "This action cannot be undone."
     },
     "newHint": "AI will suggest something you've never cooked before"
   }

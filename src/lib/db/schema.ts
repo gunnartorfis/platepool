@@ -120,6 +120,7 @@ export const constraints = sqliteTable('constraints', {
   type: text('type', { enum: ['regular', 'new'] })
     .notNull()
     .default('regular'),
+  frequency: text('frequency'),
 })
 
 export const dayTemplates = sqliteTable('day_templates', {

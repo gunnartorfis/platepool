@@ -77,6 +77,7 @@
     "lunch": "Hádegisverður",
     "dinner": "Kvöldverður",
     "week": "Vika",
+    "month": "Mánuður",
     "weekOf": "Vika af",
     "today": "Í dag",
     "generateWithAi": "Búa til með AI",
@@ -188,7 +189,10 @@
     "passwordChanged": "Lykilorð breytt",
     "selectLanguage": "Veldu tungumál",
     "icelandic": "Íslenska",
-    "english": "English"
+    "english": "English",
+    "constraintFrequency": "Tíðni",
+    "constraintFrequencyNone": "Engin takmörk",
+    "perWeek": "/viku"
   },
   "days": {
     "monday": "Mánudagur",
@@ -218,8 +222,10 @@
       "healthy": "Hollur",
       "comfort": "Huggunarfood",
       "kidFriendly": "Barna",
+      "quick": "Fljót & auðvelt",
       "new": "Eitthvað nýtt",
-      "create": "Ný"
+      "create": "Ný",
+      "deleteWarning": "Þessi aðgerð er endanleg."
     },
     "newHint": "AI mun mæla með eðu sem þú hefur aldrei eldað áður"
   }

@@ -1,12 +1,12 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, eq, desc, isNotNull } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDbWithSchema } from '../db'
 import {
-  familyMembers,
   families,
-  familyMealPlans,
   familyDayPlans,
+  familyMealPlans,
+  familyMembers,
   familyShares,
   users,
 } from '../db/schema'
@@ -285,7 +285,7 @@ export const upsertHomeDayPlan = createServerFn({ method: 'POST' })
       .limit(1)
     if (!membership[0]) throw new Error('Not a member of any home')
 
-    let plan = await db
+    const plan = await db
       .select()
       .from(familyMealPlans)
       .where(
@@ -574,3 +574,92 @@ export const getPastHomeRecipeUrls = createServerFn({ method: 'GET' }).handler(
       .map((r) => r.recipeUrl as string)
   },
 )
+
+export const getHomeMealPlansForMonth = createServerFn({ method: 'GET' })
+  .inputValidator((data: unknown) =>
+    z.object({ year: z.number(), month: z.number() }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const db = await getDbWithSchema()
+    const user = await getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    const membership = await db
+      .select()
+      .from(familyMembers)
+      .where(eq(familyMembers.userId, user.id))
+      .limit(1)
+    if (!membership[0]) throw new Error('Not a member of any home')
+
+    const firstDay = new Date(data.year, data.month - 1, 1)
+    const lastDay = new Date(data.year, data.month, 0)
+
+    const startWeek = new Date(firstDay)
+    startWeek.setDate(startWeek.getDate() - ((firstDay.getDay() + 6) % 7))
+    const endWeek = new Date(lastDay)
+    endWeek.setDate(endWeek.getDate() + ((7 - lastDay.getDay()) % 7))
+
+    const weekStarts: string[] = []
+    const current = new Date(startWeek)
+    while (current <= endWeek) {
+      const day = current.getDay()
+      const diff = day === 0 ? -6 : 1 - day
+      const mon = new Date(current)
+      mon.setDate(current.getDate() + diff)
+      const monStr = mon.toISOString().slice(0, 10)
+      if (!weekStarts.includes(monStr)) {
+        weekStarts.push(monStr)
+      }
+      current.setDate(current.getDate() + 7)
+    }
+
+    const plans = await db
+      .select()
+      .from(familyMealPlans)
+      .where(
+        and(
+          eq(familyMealPlans.familyId, membership[0].familyId),
+          inArray(familyMealPlans.weekStart, weekStarts),
+        ),
+      )
+
+    const planMap = new Map(plans.map((p) => [p.weekStart, p]))
+
+    const result: Record<
+      string,
+      Array<{
+        dayOfWeek: number
+        mealName: string | null
+        notes: string | null
+        recipeUrl: string | null
+        constraintIds: Array<string>
+      }>
+    > = {}
+
+    for (const weekStart of weekStarts) {
+      const plan = planMap.get(weekStart)
+      if (!plan) {
+        const id = uid()
+        await db.insert(familyMealPlans).values({
+          id,
+          familyId: membership[0].familyId,
+          weekStart,
+        })
+        result[weekStart] = []
+      } else {
+        const days = await db
+          .select()
+          .from(familyDayPlans)
+          .where(eq(familyDayPlans.familyMealPlanId, plan.id))
+        result[weekStart] = days.map((d) => ({
+          dayOfWeek: d.dayOfWeek,
+          mealName: d.mealName,
+          notes: d.notes,
+          recipeUrl: d.recipeUrl,
+          constraintIds: JSON.parse(d.constraintIds) as Array<string>,
+        }))
+      }
+    }
+
+    return result
+  })

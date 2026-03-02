@@ -6,12 +6,12 @@ import { getDbWithSchema } from '../db'
 import {
   constraints,
   dayTemplates,
-  groupLinks,
-  groupFamilies,
-  recipeLinks,
-  familyMembers,
-  familyMealPlans,
   familyDayPlans,
+  familyMealPlans,
+  familyMembers,
+  groupFamilies,
+  groupLinks,
+  recipeLinks,
 } from '../db/schema'
 import { getUser } from '../auth/get-user'
 import { upsertHomeDayPlan } from './homes'
@@ -100,8 +100,10 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
           const c = constraintMap.get(id)
           if (!c) return id
           const hasNewConstraint = newConstraintIds.has(id)
+          const freq = c.frequency ? ` (max ${c.frequency}x/week)` : ''
           return (
             c.name +
+            freq +
             (hasNewConstraint
               ? ' (NEW - make it something different from their history!)'
               : '')
@@ -110,6 +112,11 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
         .join(', ')
       return `  ${name}: ${constraintDetails || '(no constraints)'}`
     }).join('\n')
+
+    const frequencyConstraints = userConstraints
+      .filter((c) => c.frequency)
+      .map((c) => `  - ${c.name}: maximum ${c.frequency} times per week`)
+      .join('\n')
 
     // Load group recipe links for inspiration
     let linkLines = ''
@@ -145,7 +152,7 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
 Week: ${fmt(weekDate)} – ${fmt(endDate)}
 
 Day constraints (these MUST be respected — they reflect real life constraints like busy evenings or dietary preferences):
-${dayConstraintLines}${historyLines}${linkLines}
+${dayConstraintLines}${frequencyConstraints ? '\n\nFrequency limits (strictly respect these):\n' + frequencyConstraints : ''}${historyLines}${linkLines}
 
 Generate a 7-day DINNER plan (dinner only — not breakfast or lunch). For each day:
 - Suggest a meal name that fits the constraints
