@@ -54,6 +54,7 @@ type RecipeMetadata = {
 function RecipesPage() {
   const { t, i18n } = useTranslation()
   const [recipes, setRecipes] = useState<Array<RecipeData>>([])
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<RecipeData | null>(null)
 
@@ -70,8 +71,13 @@ function RecipesPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   async function load() {
-    const rs = await getMyRecipes()
-    setRecipes(rs as Array<RecipeData>)
+    setLoading(true)
+    try {
+      const rs = await getMyRecipes()
+      setRecipes(rs as Array<RecipeData>)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -274,7 +280,13 @@ function RecipesPage() {
           <Button onClick={openNew}>{t('recipes.addRecipe')}</Button>
         </div>
 
-        {recipes.length === 0 && !showForm ? (
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-20 rounded-lg bg-muted animate-pulse" />
+            ))}
+          </div>
+        ) : recipes.length === 0 && !showForm ? (
           <div className="text-center py-16 text-muted-foreground">
             <div className="mb-4">
               <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">

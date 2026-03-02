@@ -262,6 +262,7 @@ function DrawerForm({
 
 function HomePage() {
   const { t } = useTranslation()
+  const MONTH_KEYS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'] as const
   const router = useRouter()
   const { week: weekStart } = Route.useSearch()
 
@@ -834,18 +835,15 @@ function HomePage() {
         {tab === 'planner' && view === 'month' && (
           <div className="mb-6">
             <p className="text-sm text-muted-foreground mb-4">
-              {month.toLocaleDateString('en-GB', {
-                month: 'long',
-                year: 'numeric',
-              })}
+              {t(`months.${MONTH_KEYS[month.getMonth()]}`)} {month.getFullYear()}
             </p>
             <div className="grid grid-cols-7 gap-1 md:gap-2">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+              {(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const).map((day) => (
                 <div
                   key={day}
                   className="text-center text-xs font-medium text-muted-foreground py-2"
                 >
-                  {day}
+                  {t(`days.${day}`)}
                 </div>
               ))}
               {Array.from({ length: 42 }, (_, i) => {
@@ -946,11 +944,7 @@ function HomePage() {
           <div>
             <p className="text-sm text-muted-foreground mb-4">
               {t('home.weekOf')}{' '}
-              {weekDates[0].toLocaleDateString('en-GB', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
+              {weekDates[0].getDate()}. {t(`months.${MONTH_KEYS[weekDates[0].getMonth()]}`)} {weekDates[0].getFullYear()}
             </p>
 
             {/* Mobile: vertical day list */}
