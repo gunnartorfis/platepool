@@ -2,26 +2,11 @@ import { createServerFn } from '@tanstack/react-start'
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDbWithSchema } from '../db'
-import {
-  familyMembers,
-  groupFamilies,
-  groupLinks,
-  recipeLinks,
-} from '../db/schema'
+import { recipeLinks } from '../db/schema'
 import { getUser } from '../auth/get-user'
 
 function uid() {
   return crypto.randomUUID()
-}
-
-async function getUserFamilyId(userId: string): Promise<string | null> {
-  const db = await getDbWithSchema()
-  const userFamilies = await db
-    .select({ familyId: familyMembers.familyId })
-    .from(familyMembers)
-    .where(eq(familyMembers.userId, userId))
-    .limit(1)
-  return userFamilies[0]?.familyId ?? null
 }
 
 export const getMyRecipes = createServerFn({ method: 'GET' }).handler(
@@ -97,106 +82,6 @@ export const deleteRecipe = createServerFn({ method: 'POST' })
     await db
       .delete(recipeLinks)
       .where(and(eq(recipeLinks.id, data.id), eq(recipeLinks.userId, user.id)))
-  })
-
-export const addRecipeToGroup = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) =>
-    z.object({ groupId: z.string(), recipeId: z.string() }).parse(data),
-  )
-  .handler(async ({ data }) => {
-    const db = await getDbWithSchema()
-    const user = await getUser()
-    if (!user) throw new Error('Unauthorized')
-
-    const familyId = await getUserFamilyId(user.id)
-    if (!familyId) throw new Error('Not a member of this group')
-
-    const membership = await db
-      .select()
-      .from(groupFamilies)
-      .where(
-        and(
-          eq(groupFamilies.groupId, data.groupId),
-          eq(groupFamilies.familyId, familyId),
-        ),
-      )
-      .limit(1)
-    if (!membership[0]) throw new Error('Not a member of this group')
-
-    const recipe = await db
-      .select()
-      .from(recipeLinks)
-      .where(
-        and(eq(recipeLinks.id, data.recipeId), eq(recipeLinks.userId, user.id)),
-      )
-      .limit(1)
-    if (!recipe[0]) throw new Error('Recipe not found')
-
-    await db
-      .insert(groupLinks)
-      .values({
-        groupId: data.groupId,
-        recipeLinkId: data.recipeId,
-        addedBy: user.id,
-      })
-      .onConflictDoNothing()
-  })
-
-export const getGroupRecipes = createServerFn({ method: 'GET' })
-  .inputValidator((data: unknown) =>
-    z.object({ groupId: z.string() }).parse(data),
-  )
-  .handler(async ({ data }) => {
-    const db = await getDbWithSchema()
-    const user = await getUser()
-    if (!user) throw new Error('Unauthorized')
-
-    const familyId = await getUserFamilyId(user.id)
-    if (!familyId) throw new Error('Not a member')
-
-    const membership = await db
-      .select()
-      .from(groupFamilies)
-      .where(
-        and(
-          eq(groupFamilies.groupId, data.groupId),
-          eq(groupFamilies.familyId, familyId),
-        ),
-      )
-      .limit(1)
-    if (!membership[0]) throw new Error('Not a member')
-
-    const rows = await db
-      .select({ gl: groupLinks, rl: recipeLinks })
-      .from(groupLinks)
-      .innerJoin(recipeLinks, eq(groupLinks.recipeLinkId, recipeLinks.id))
-      .where(eq(groupLinks.groupId, data.groupId))
-
-    return rows.map(({ gl, rl }) => ({
-      ...rl,
-      tags: JSON.parse(rl.tags) as Array<string>,
-      metadata: rl.metadata ? JSON.parse(rl.metadata) : null,
-      addedBy: gl.addedBy,
-      addedAt: gl.addedAt,
-    }))
-  })
-
-export const removeRecipeFromGroup = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) =>
-    z.object({ groupId: z.string(), recipeId: z.string() }).parse(data),
-  )
-  .handler(async ({ data }) => {
-    const db = await getDbWithSchema()
-    const user = await getUser()
-    if (!user) throw new Error('Unauthorized')
-    await db
-      .delete(groupLinks)
-      .where(
-        and(
-          eq(groupLinks.groupId, data.groupId),
-          eq(groupLinks.recipeLinkId, data.recipeId),
-        ),
-      )
   })
 
 export const fetchRecipeMetadata = createServerFn({ method: 'POST' })

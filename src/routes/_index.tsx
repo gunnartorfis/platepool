@@ -10,8 +10,6 @@ import {
   getMyHome,
   getPastHomeMealNames,
   getPastHomeRecipeUrls,
-  shareHomeMealPlan,
-  unshareHomeMealPlan,
   updateHomeName,
   upsertHomeDayPlan,
 } from '@/lib/server/homes'
@@ -21,7 +19,7 @@ import {
   markHomeSetupCompleted,
 } from '@/lib/server/auth'
 import { getDayTemplates, getMyConstraints } from '@/lib/server/constraints'
-import { getMyGroups } from '@/lib/server/groups'
+import { getMySubscriptions } from '@/lib/server/subscriptions'
 import {
   currentWeekStart,
   isoWeek,
@@ -288,7 +286,9 @@ function HomePage() {
   const [dayTemplates, setDayTemplates] = useState<
     Array<{ dayOfWeek: number; constraintIds: Array<string> }>
   >([])
-  const [groups, setGroups] = useState<Array<{ id: string; name: string }>>([])
+  const [subscriptions, setSubscriptions] = useState<
+    Array<{ id: string; name: string }>
+  >([])
   const [pastMealNames, setPastMealNames] = useState<Array<string>>([])
   const [pastRecipeUrls, setPastRecipeUrls] = useState<Array<string>>([])
 
@@ -328,7 +328,7 @@ function HomePage() {
           getHomeMealPlanWithSharing({ data: { weekStart } }),
           getMyConstraints(),
           getDayTemplates(),
-          getMyGroups(),
+          getMySubscriptions(),
           getPastHomeMealNames(),
           getPastHomeRecipeUrls(),
         ],
@@ -346,7 +346,7 @@ function HomePage() {
           constraintIds: JSON.parse(t.constraintIds) as Array<string>,
         })),
       )
-      setGroups(gs)
+      setSubscriptions(gs)
       setPastMealNames(pastNames)
       setPastRecipeUrls(pastUrls)
 
@@ -411,21 +411,6 @@ function HomePage() {
     } finally {
       setAiLoading(false)
     }
-  }
-
-  async function toggleShare(groupId: string) {
-    if (!mealPlan) return
-    const isShared = mealPlan.sharedFamilyIds.includes(groupId)
-    if (isShared) {
-      await unshareHomeMealPlan({
-        data: { weekStart, sharedWithFamilyId: groupId },
-      })
-    } else {
-      await shareHomeMealPlan({
-        data: { weekStart, sharedWithFamilyId: groupId },
-      })
-    }
-    await load()
   }
 
   async function handleUpdateName() {
@@ -988,31 +973,21 @@ function HomePage() {
               ))}
             </div>
 
-            {/* Share with groups */}
-            {groups.length > 0 && (
+            {/* Subscribers - show who subscribes to this home */}
+            {subscriptions.length > 0 && (
               <div className="border border-border rounded-lg p-4 md:p-5">
                 <h2 className="text-sm font-semibold mb-3 text-foreground">
-                  {t('planner.shareWithGroups')}
+                  {t('planner.subscribers')}
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {groups.map((g) => {
-                    const shared = mealPlan.sharedFamilyIds.includes(g.id)
-                    return (
-                      <button
-                        key={g.id}
-                        onClick={() => toggleShare(g.id)}
-                        className={cn(
-                          'px-3 py-1.5 rounded-md text-sm font-medium border transition-colors',
-                          shared
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-card text-foreground border-border hover:border-primary/50',
-                        )}
-                      >
-                        {shared ? '✓ ' : ''}
-                        {g.name}
-                      </button>
-                    )
-                  })}
+                  {subscriptions.map((s) => (
+                    <span
+                      key={s.id}
+                      className="px-3 py-1.5 rounded-md text-sm font-medium border bg-card text-foreground border-border"
+                    >
+                      {s.name}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}

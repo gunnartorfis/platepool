@@ -15,9 +15,7 @@ import { Route as RecipesRouteImport } from './routes/recipes'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConstraintsRouteImport } from './routes/constraints'
 import { Route as IndexRouteImport } from './routes/_index'
-import { Route as GroupsIndexRouteImport } from './routes/groups/index'
-import { Route as GroupsNewRouteImport } from './routes/groups/new'
-import { Route as GroupsGroupIdRouteImport } from './routes/groups/$groupId'
+import { Route as SubscriptionsIndexRouteImport } from './routes/subscriptions/index'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -48,19 +46,9 @@ const IndexRoute = IndexRouteImport.update({
   id: '/_index',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GroupsIndexRoute = GroupsIndexRouteImport.update({
-  id: '/groups/',
-  path: '/groups/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GroupsNewRoute = GroupsNewRouteImport.update({
-  id: '/groups/new',
-  path: '/groups/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
-  id: '/groups/$groupId',
-  path: '/groups/$groupId',
+const SubscriptionsIndexRoute = SubscriptionsIndexRouteImport.update({
+  id: '/subscriptions/',
+  path: '/subscriptions/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -71,9 +59,7 @@ export interface FileRoutesByFullPath {
   '/recipes': typeof RecipesRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
-  '/groups/$groupId': typeof GroupsGroupIdRoute
-  '/groups/new': typeof GroupsNewRoute
-  '/groups/': typeof GroupsIndexRoute
+  '/subscriptions/': typeof SubscriptionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,9 +68,7 @@ export interface FileRoutesByTo {
   '/recipes': typeof RecipesRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
-  '/groups/$groupId': typeof GroupsGroupIdRoute
-  '/groups/new': typeof GroupsNewRoute
-  '/groups': typeof GroupsIndexRoute
+  '/subscriptions': typeof SubscriptionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,9 +78,7 @@ export interface FileRoutesById {
   '/recipes': typeof RecipesRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
-  '/groups/$groupId': typeof GroupsGroupIdRoute
-  '/groups/new': typeof GroupsNewRoute
-  '/groups/': typeof GroupsIndexRoute
+  '/subscriptions/': typeof SubscriptionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,9 +89,7 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/register'
     | '/settings'
-    | '/groups/$groupId'
-    | '/groups/new'
-    | '/groups/'
+    | '/subscriptions/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -118,9 +98,7 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/register'
     | '/settings'
-    | '/groups/$groupId'
-    | '/groups/new'
-    | '/groups'
+    | '/subscriptions'
   id:
     | '__root__'
     | '/_index'
@@ -129,9 +107,7 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/register'
     | '/settings'
-    | '/groups/$groupId'
-    | '/groups/new'
-    | '/groups/'
+    | '/subscriptions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -141,9 +117,7 @@ export interface RootRouteChildren {
   RecipesRoute: typeof RecipesRoute
   RegisterRoute: typeof RegisterRoute
   SettingsRoute: typeof SettingsRoute
-  GroupsGroupIdRoute: typeof GroupsGroupIdRoute
-  GroupsNewRoute: typeof GroupsNewRoute
-  GroupsIndexRoute: typeof GroupsIndexRoute
+  SubscriptionsIndexRoute: typeof SubscriptionsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -190,25 +164,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/groups/': {
-      id: '/groups/'
-      path: '/groups'
-      fullPath: '/groups/'
-      preLoaderRoute: typeof GroupsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/groups/new': {
-      id: '/groups/new'
-      path: '/groups/new'
-      fullPath: '/groups/new'
-      preLoaderRoute: typeof GroupsNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/groups/$groupId': {
-      id: '/groups/$groupId'
-      path: '/groups/$groupId'
-      fullPath: '/groups/$groupId'
-      preLoaderRoute: typeof GroupsGroupIdRouteImport
+    '/subscriptions/': {
+      id: '/subscriptions/'
+      path: '/subscriptions'
+      fullPath: '/subscriptions/'
+      preLoaderRoute: typeof SubscriptionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -221,9 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecipesRoute: RecipesRoute,
   RegisterRoute: RegisterRoute,
   SettingsRoute: SettingsRoute,
-  GroupsGroupIdRoute: GroupsGroupIdRoute,
-  GroupsNewRoute: GroupsNewRoute,
-  GroupsIndexRoute: GroupsIndexRoute,
+  SubscriptionsIndexRoute: SubscriptionsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

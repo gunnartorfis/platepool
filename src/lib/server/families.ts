@@ -2,7 +2,12 @@ import { createServerFn } from '@tanstack/react-start'
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDbWithSchema } from '../db'
-import { families, familyMembers, users } from '../db/schema'
+import {
+  families,
+  familyMembers,
+  familySubscriptions,
+  users,
+} from '../db/schema'
 import { getUser } from '../auth/get-user'
 
 function uid() {
@@ -152,4 +157,56 @@ export const leaveFamily = createServerFn({ method: 'POST' })
           eq(familyMembers.userId, user.id),
         ),
       )
+  })
+
+export const getDiscoverableFamilies = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  const db = await getDbWithSchema()
+  const user = await getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const myFamilies = await db
+    .select({ familyId: familyMembers.familyId })
+    .from(familyMembers)
+    .where(eq(familyMembers.userId, user.id))
+
+  const myFamilyIds = myFamilies.map((f) => f.familyId)
+
+  const mySubscriptions = await db
+    .select({ familyId: familySubscriptions.familyId })
+    .from(familySubscriptions)
+    .where(eq(familySubscriptions.userId, user.id))
+
+  const subscribedIds = mySubscriptions.map((s) => s.familyId)
+  const excludeIds = [...myFamilyIds, ...subscribedIds]
+
+  const allFamilies = await db.select().from(families)
+
+  return allFamilies
+    .filter((f) => !excludeIds.includes(f.id))
+    .map((f) => ({ id: f.id, name: f.name }))
+})
+
+export const checkSubscriptionStatus = createServerFn({ method: 'GET' })
+  .inputValidator((data: unknown) =>
+    z.object({ familyId: z.string() }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const db = await getDbWithSchema()
+    const user = await getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    const subscription = await db
+      .select()
+      .from(familySubscriptions)
+      .where(
+        and(
+          eq(familySubscriptions.familyId, data.familyId),
+          eq(familySubscriptions.userId, user.id),
+        ),
+      )
+      .limit(1)
+
+    return !!subscription[0]
   })

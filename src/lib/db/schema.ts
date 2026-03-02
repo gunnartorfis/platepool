@@ -23,18 +23,6 @@ export const sessions = sqliteTable('sessions', {
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
 })
 
-export const groups = sqliteTable('groups', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  createdBy: text('created_by')
-    .notNull()
-    .references(() => users.id),
-  inviteCode: text('invite_code').notNull().unique(),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .default(sql`(unixepoch())`),
-})
-
 export const families = sqliteTable('families', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -97,17 +85,14 @@ export const familyShares = sqliteTable('family_shares', {
     .default(sql`(unixepoch())`),
 })
 
-export const groupFamilies = sqliteTable('group_families', {
-  groupId: text('group_id')
-    .notNull()
-    .references(() => groups.id, { onDelete: 'cascade' }),
+export const familySubscriptions = sqliteTable('family_subscriptions', {
   familyId: text('family_id')
     .notNull()
     .references(() => families.id, { onDelete: 'cascade' }),
-  role: text('role', { enum: ['admin', 'member'] })
+  userId: text('user_id')
     .notNull()
-    .default('member'),
-  joinedAt: integer('joined_at', { mode: 'timestamp' })
+    .references(() => users.id, { onDelete: 'cascade' }),
+  subscribedAt: integer('subscribed_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
 })
@@ -150,21 +135,6 @@ export const recipeLinks = sqliteTable('recipe_links', {
     .default(sql`(unixepoch())`),
 })
 
-export const groupLinks = sqliteTable('group_links', {
-  groupId: text('group_id')
-    .notNull()
-    .references(() => groups.id, { onDelete: 'cascade' }),
-  recipeLinkId: text('recipe_link_id')
-    .notNull()
-    .references(() => recipeLinks.id, { onDelete: 'cascade' }),
-  addedBy: text('added_by')
-    .notNull()
-    .references(() => users.id),
-  addedAt: integer('added_at', { mode: 'timestamp' })
-    .notNull()
-    .default(sql`(unixepoch())`),
-})
-
 export const mealPlans = sqliteTable('meal_plans', {
   id: text('id').primaryKey(),
   userId: text('user_id')
@@ -188,45 +158,17 @@ export const dayPlans = sqliteTable('day_plans', {
   constraintIds: text('constraint_ids').notNull().default('[]'),
 })
 
-export const planShares = sqliteTable('plan_shares', {
-  mealPlanId: text('meal_plan_id')
-    .notNull()
-    .references(() => mealPlans.id, { onDelete: 'cascade' }),
-  groupId: text('group_id')
-    .notNull()
-    .references(() => groups.id, { onDelete: 'cascade' }),
-  sharedAt: integer('shared_at', { mode: 'timestamp' })
-    .notNull()
-    .default(sql`(unixepoch())`),
-})
-
-export const groupShares = sqliteTable('group_shares', {
-  familyMealPlanId: text('family_meal_plan_id')
-    .notNull()
-    .references(() => familyMealPlans.id, { onDelete: 'cascade' }),
-  groupId: text('group_id')
-    .notNull()
-    .references(() => groups.id, { onDelete: 'cascade' }),
-  sharedAt: integer('shared_at', { mode: 'timestamp' })
-    .notNull()
-    .default(sql`(unixepoch())`),
-})
-
 // Types
 export type User = typeof users.$inferSelect
 export type Session = typeof sessions.$inferSelect
-export type Group = typeof groups.$inferSelect
-export type GroupFamily = typeof groupFamilies.$inferSelect
-export type GroupShare = typeof groupShares.$inferSelect
 export type Constraint = typeof constraints.$inferSelect
 export type DayTemplate = typeof dayTemplates.$inferSelect
 export type RecipeLink = typeof recipeLinks.$inferSelect
-export type GroupLink = typeof groupLinks.$inferSelect
 export type MealPlan = typeof mealPlans.$inferSelect
 export type DayPlan = typeof dayPlans.$inferSelect
-export type PlanShare = typeof planShares.$inferSelect
 export type Family = typeof families.$inferSelect
 export type FamilyMember = typeof familyMembers.$inferSelect
 export type FamilyMealPlan = typeof familyMealPlans.$inferSelect
 export type FamilyDayPlan = typeof familyDayPlans.$inferSelect
 export type FamilyShare = typeof familyShares.$inferSelect
+export type FamilySubscription = typeof familySubscriptions.$inferSelect

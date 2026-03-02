@@ -1,18 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm'
+import { and, desc, eq, isNotNull } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDbWithSchema } from '../db'
-import {
-  dayPlans,
-  families,
-  familyDayPlans,
-  familyMealPlans,
-  familyMembers,
-  groupFamilies,
-  groupShares,
-  mealPlans,
-  planShares,
-} from '../db/schema'
+import { dayPlans, mealPlans } from '../db/schema'
 import { getUser } from '../auth/get-user'
 
 function uid() {
@@ -85,18 +75,12 @@ export const getMealPlan = createServerFn({ method: 'GET' })
       .from(dayPlans)
       .where(eq(dayPlans.mealPlanId, plan.id))
 
-    const sharedGroups = await db
-      .select({ groupId: planShares.groupId })
-      .from(planShares)
-      .where(eq(planShares.mealPlanId, plan.id))
-
     return {
       plan: { ...plan },
       days: days.map((d) => ({
         ...d,
         constraintIds: JSON.parse(d.constraintIds) as Array<string>,
       })),
-      sharedGroupIds: sharedGroups.map((s) => s.groupId),
     }
   })
 
@@ -151,55 +135,6 @@ export const upsertDayPlan = createServerFn({ method: 'POST' })
     }
   })
 
-export const sharePlan = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) =>
-    z.object({ weekStart: z.string(), groupId: z.string() }).parse(data),
-  )
-  .handler(async ({ data }) => {
-    const db = await getDbWithSchema()
-    const user = await getUser()
-    if (!user) throw new Error('Unauthorized')
-
-    const plan = await ensureMealPlan(user.id, data.weekStart)
-
-    await db
-      .insert(planShares)
-      .values({ mealPlanId: plan.id, groupId: data.groupId })
-      .onConflictDoNothing()
-  })
-
-export const unsharePlan = createServerFn({ method: 'POST' })
-  .inputValidator((data: unknown) =>
-    z.object({ weekStart: z.string(), groupId: z.string() }).parse(data),
-  )
-  .handler(async ({ data }) => {
-    const db = await getDbWithSchema()
-    const user = await getUser()
-    if (!user) throw new Error('Unauthorized')
-
-    const plan = await db
-      .select()
-      .from(mealPlans)
-      .where(
-        and(
-          eq(mealPlans.userId, user.id),
-          eq(mealPlans.weekStart, data.weekStart),
-        ),
-      )
-      .limit(1)
-
-    if (!plan[0]) return
-
-    await db
-      .delete(planShares)
-      .where(
-        and(
-          eq(planShares.mealPlanId, plan[0].id),
-          eq(planShares.groupId, data.groupId),
-        ),
-      )
-  })
-
 export const getPastMealNames = createServerFn({ method: 'GET' }).handler(
   async () => {
     const db = await getDbWithSchema()
@@ -251,82 +186,3 @@ export const getPastRecipeUrls = createServerFn({ method: 'GET' }).handler(
       .map((r) => r.recipeUrl as string)
   },
 )
-
-export const getGroupFeed = createServerFn({ method: 'GET' })
-  .inputValidator((data: unknown) =>
-    z.object({ groupId: z.string(), weekStart: z.string() }).parse(data),
-  )
-  .handler(async ({ data }) => {
-    const db = await getDbWithSchema()
-    const user = await getUser()
-    if (!user) throw new Error('Unauthorized')
-
-    const userFamilies = await db
-      .select({ familyId: familyMembers.familyId })
-      .from(familyMembers)
-      .where(eq(familyMembers.userId, user.id))
-      .limit(1)
-    const userFamilyId = userFamilies[0]?.familyId
-    if (!userFamilyId) throw new Error('Not a member')
-
-    const membership = await db
-      .select()
-      .from(groupFamilies)
-      .where(
-        and(
-          eq(groupFamilies.groupId, data.groupId),
-          eq(groupFamilies.familyId, userFamilyId),
-        ),
-      )
-      .limit(1)
-    if (!membership[0]) throw new Error('Not a member')
-
-    const groupFamilyMembers = await db
-      .select({ family: families })
-      .from(groupFamilies)
-      .innerJoin(families, eq(groupFamilies.familyId, families.id))
-      .where(eq(groupFamilies.groupId, data.groupId))
-
-    const sharedFamilyPlans = await db
-      .select({ plan: familyMealPlans, share: groupShares })
-      .from(groupShares)
-      .innerJoin(
-        familyMealPlans,
-        eq(groupShares.familyMealPlanId, familyMealPlans.id),
-      )
-      .where(
-        and(
-          eq(groupShares.groupId, data.groupId),
-          eq(familyMealPlans.weekStart, data.weekStart),
-        ),
-      )
-
-    const planIds = sharedFamilyPlans.map((p) => p.plan.id)
-    const allDays =
-      planIds.length > 0
-        ? await db
-            .select()
-            .from(familyDayPlans)
-            .where(inArray(familyDayPlans.familyMealPlanId, planIds))
-        : []
-
-    return groupFamilyMembers.map(({ family: fam }) => {
-      const familyPlan = sharedFamilyPlans.find(
-        (p) => p.plan.familyId === fam.id,
-      )
-      const familyDays = familyPlan
-        ? allDays
-            .filter((d) => d.familyMealPlanId === familyPlan.plan.id)
-            .map((d) => ({
-              ...d,
-              constraintIds: JSON.parse(d.constraintIds) as Array<string>,
-            }))
-        : []
-
-      return {
-        family: { id: fam.id, name: fam.name },
-        days: familyDays,
-        isMe: fam.id === userFamilyId,
-      }
-    })
-  })

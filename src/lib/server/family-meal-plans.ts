@@ -8,6 +8,7 @@ import {
   familyMealPlans,
   familyMembers,
   familyShares,
+  familySubscriptions,
 } from '../db/schema'
 import { getUser } from '../auth/get-user'
 
@@ -368,4 +369,73 @@ export const getSharedFamilyMealPlans = createServerFn({ method: 'GET' })
     }
 
     return sharedPlans
+  })
+
+export const getSubscribedFamilyMealPlan = createServerFn({ method: 'GET' })
+  .inputValidator((data: unknown) =>
+    z.object({ familyId: z.string(), weekStart: z.string() }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const db = await getDbWithSchema()
+    const user = await getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    const memberCheck = await db
+      .select()
+      .from(familyMembers)
+      .where(
+        and(
+          eq(familyMembers.familyId, data.familyId),
+          eq(familyMembers.userId, user.id),
+        ),
+      )
+      .limit(1)
+
+    const subscriberCheck = await db
+      .select()
+      .from(familySubscriptions)
+      .where(
+        and(
+          eq(familySubscriptions.familyId, data.familyId),
+          eq(familySubscriptions.userId, user.id),
+        ),
+      )
+      .limit(1)
+
+    if (!memberCheck[0] && !subscriberCheck[0]) {
+      throw new Error('Not a member or subscriber')
+    }
+
+    const plan = await db
+      .select()
+      .from(familyMealPlans)
+      .where(
+        and(
+          eq(familyMealPlans.familyId, data.familyId),
+          eq(familyMealPlans.weekStart, data.weekStart),
+        ),
+      )
+      .limit(1)
+
+    if (!plan[0]) return null
+
+    const days = await db
+      .select()
+      .from(familyDayPlans)
+      .where(eq(familyDayPlans.familyMealPlanId, plan[0].id))
+
+    const [family] = await db
+      .select()
+      .from(families)
+      .where(eq(families.id, data.familyId))
+
+    return {
+      plan: { ...plan[0] },
+      family: family ? { id: family.id, name: family.name } : null,
+      days: days.map((d) => ({
+        ...d,
+        constraintIds: JSON.parse(d.constraintIds) as Array<string>,
+      })),
+      role: memberCheck[0]?.role ?? 'subscriber',
+    }
   })

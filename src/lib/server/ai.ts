@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { eq, inArray } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDbWithSchema } from '../db'
 import {
@@ -9,8 +9,6 @@ import {
   familyDayPlans,
   familyMealPlans,
   familyMembers,
-  groupFamilies,
-  groupLinks,
   recipeLinks,
 } from '../db/schema'
 import { getUser } from '../auth/get-user'
@@ -118,28 +116,20 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
       .map((c) => `  - ${c.name}: maximum ${c.frequency} times per week`)
       .join('\n')
 
-    // Load group recipe links for inspiration
+    // Load user recipe links for inspiration
     let linkLines = ''
-    if (userFamilyId) {
-      const memberships = await db
-        .select()
-        .from(groupFamilies)
-        .where(eq(groupFamilies.familyId, userFamilyId))
+    const userLinks = await db
+      .select()
+      .from(recipeLinks)
+      .where(eq(recipeLinks.userId, user.id))
 
-      if (memberships.length > 0) {
-        const groupIds = memberships.map((m) => m.groupId)
-        const gLinks = await db
-          .select({ gl: groupLinks, rl: recipeLinks })
-          .from(groupLinks)
-          .innerJoin(recipeLinks, eq(groupLinks.recipeLinkId, recipeLinks.id))
-          .where(inArray(groupLinks.groupId, groupIds))
-
-        if (gLinks.length > 0) {
-          linkLines =
-            '\n\nAvailable recipe links (for inspiration, optional):\n' +
-            gLinks.map(({ rl }) => `  - ${rl.title}: ${rl.url}`).join('\n')
-        }
-      }
+    if (userLinks.length > 0) {
+      linkLines =
+        '\n\nAvailable recipe links (for inspiration, optional):\n' +
+        userLinks
+          .slice(0, 10)
+          .map((l) => `  - ${l.title}: ${l.url}`)
+          .join('\n')
     }
 
     const weekDate = new Date(data.weekStart + 'T12:00:00')
