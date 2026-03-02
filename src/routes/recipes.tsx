@@ -197,7 +197,6 @@ function RecipesPage() {
           }
 
           if (selectedTags.length === 0) {
-            console.log('[DEBUG] No tags found in metadata, calling AI...')
             setGeneratingTags(true)
             try {
               const aiResult = (await generateRecipeTags({
@@ -210,16 +209,13 @@ function RecipesPage() {
                 },
               })) as { tags?: Array<string>; error?: string }
 
-              console.log('[DEBUG] AI result:', aiResult)
-
               if (aiResult && aiResult.tags && aiResult.tags.length > 0) {
-                console.log('[DEBUG] Setting tags:', aiResult.tags)
                 setSelectedTags(aiResult.tags)
               } else {
-                console.log('[DEBUG] AI returned no tags')
+                setSelectedTags([])
               }
             } catch (e) {
-              console.error('[DEBUG] AI error:', e)
+              console.error('AI error:', e)
             } finally {
               setGeneratingTags(false)
             }
@@ -367,9 +363,9 @@ function RecipesPage() {
 
                   {(fetchingMetadata || generatingTags) && (
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                      <div className="relative w-6 h-6">
+                      <div className="relative w-6 h-6 flex items-center justify-center">
                         <div className="absolute inset-0 rounded-full border-2 border-amber-200 border-t-amber-500 animate-spin" />
-                        <SparkleIcon className="absolute inset-0 w-4 h-4 text-amber-500 animate-pulse" />
+                        <SparkleIcon className="w-4 h-4 text-amber-500 animate-pulse" />
                       </div>
                       <span className="text-sm text-amber-800">
                         {generatingTags

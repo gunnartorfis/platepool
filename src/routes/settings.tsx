@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@/components/layout/app-layout'
 import { changePassword, logout, updateProfile } from '@/lib/server/auth'
-import { getMyFamilies, leaveFamily } from '@/lib/server/families'
+import { getMyFamilies } from '@/lib/server/families'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -27,7 +27,6 @@ function SettingsPage() {
   )
 
   const [families, setFamilies] = useState<Array<Family>>([])
-  const [leaving, setLeaving] = useState<string | null>(null)
 
   const [pName, setPName] = useState('')
   const [pEmail, setPEmail] = useState('')
@@ -86,19 +85,6 @@ function SettingsPage() {
     }
     loadFamilies()
   }, [])
-
-  async function handleLeaveFamily(familyId: string) {
-    if (!confirm(t('home.leaveConfirm'))) return
-    setLeaving(familyId)
-    try {
-      await leaveFamily({ data: { familyId } })
-      await router.invalidate()
-      const fs = await getMyFamilies()
-      setFamilies(fs as Array<Family>)
-    } finally {
-      setLeaving(null)
-    }
-  }
 
   return (
     <AppLayout>
@@ -252,17 +238,6 @@ function SettingsPage() {
                       <span className="font-mono">{family.inviteCode}</span>
                     </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleLeaveFamily(family.id)}
-                    disabled={leaving === family.id}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    {leaving === family.id
-                      ? t('common.saving')
-                      : t('home.leave')}
-                  </Button>
                 </div>
               ))
             )}

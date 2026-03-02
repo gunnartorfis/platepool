@@ -35,6 +35,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import {
   Combobox,
@@ -258,7 +265,7 @@ function HomePage() {
   const router = useRouter()
   const { week: weekStart } = Route.useSearch()
 
-  const [view, setViewState] = useState<'week' | 'month'>('week')
+  const [view, setViewState] = useState<'week' | 'month'>('month')
   const [month, setMonthState] = useState(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   )
@@ -295,10 +302,15 @@ function HomePage() {
   const [tab, setTab] = useState<'planner' | 'members'>('planner')
   const [editingDay, setEditingDay] = useState<number | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
+  const [aiModalOpen, setAiModalOpen] = useState(false)
+  const [aiTimeframe, setAiTimeframe] = useState(1)
+  const [aiBudget, setAiBudget] = useState(2)
+  const [aiHealthMode, setAiHealthMode] = useState(false)
   const [saving, setSaving] = useState(false)
   const [newName, setNewName] = useState('')
   const [renameOpen, setRenameOpen] = useState(false)
   const renameInitialized = useRef(false)
+  const pendingEditDay = useRef<number | null>(null)
 
   useEffect(() => {
     if (renameInitialized.current) return
@@ -368,6 +380,13 @@ function HomePage() {
     load()
   }, [weekStart, view, month])
 
+  useEffect(() => {
+    if (pendingEditDay.current !== null && mealPlan) {
+      openEdit(pendingEditDay.current)
+      pendingEditDay.current = null
+    }
+  }, [mealPlan])
+
   async function handleSaveDay() {
     if (!mealPlan || editingDay === null) return
     setSaving(true)
@@ -397,20 +416,6 @@ function HomePage() {
     setEditRecipeUrl(day?.recipeUrl ?? '')
     setEditConstraintIds(day?.constraintIds ?? template?.constraintIds ?? [])
     setEditingDay(dayOfWeek)
-  }
-
-  async function handleAiGenerate() {
-    setAiLoading(true)
-    try {
-      await generateMealPlan({ data: { weekStart } })
-      await load()
-    } catch (err) {
-      alert(
-        err instanceof Error ? err.message : t('planner.aiGenerationFailed'),
-      )
-    } finally {
-      setAiLoading(false)
-    }
   }
 
   async function handleUpdateName() {
@@ -488,6 +493,14 @@ function HomePage() {
     )
   }
 
+  function isDateBeingGenerated(date: Date) {
+    if (!aiLoading) return false
+    const genStart = new Date(weekStart + 'T12:00:00')
+    const genEnd = new Date(genStart)
+    genEnd.setDate(genEnd.getDate() + aiTimeframe * 7 - 1)
+    return date >= genStart && date <= genEnd
+  }
+
   const isPastWeek = weekStart < currentWeekStart()
 
   if (!home || !mealPlan) {
@@ -558,6 +571,170 @@ function HomePage() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{t('planner.generateWithAi')}</DialogTitle>
+                  <DialogDescription>
+                    {t('planner.aiModalDescription') ||
+                      'Configure options for AI meal plan generation'}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Timeframe</label>
+                    <Select
+                      value={aiTimeframe.toString()}
+                      onValueChange={(v) => setAiTimeframe(Number(v))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 week</SelectItem>
+                        <SelectItem value="2">2 weeks</SelectItem>
+                        <SelectItem value="3">3 weeks</SelectItem>
+                        <SelectItem value="4">4 weeks</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Budget</label>
+                    <Select
+                      value={aiBudget.toString()}
+                      onValueChange={(v) => setAiBudget(Number(v))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Budget (tight)</SelectItem>
+                        <SelectItem value="2">Balanced</SelectItem>
+                        <SelectItem value="3">Generous</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">
+                        Health / Átak Mode
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Focused cooking sprint
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setAiHealthMode(!aiHealthMode)}
+                      className={cn(
+                        'relative w-11 h-6 rounded-full transition-colors',
+                        aiHealthMode ? 'bg-green-500' : 'bg-muted',
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform',
+                          aiHealthMode && 'translate-x-5',
+                        )}
+                      />
+                    </button>
+                  </div>
+
+                  {constraints.length > 0 && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Constraints & Limitations
+                      </label>
+                      <div className="bg-muted/50 rounded-md p-3 text-sm space-y-1">
+                        {constraints.map((c) => (
+                          <div key={c.id} className="flex items-center gap-2">
+                            <span
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: c.color }}
+                            />
+                            <span>
+                              {c.name}
+                              {c.frequency && ` (max ${c.frequency}x/week)`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {dayTemplates.some((t) => t.constraintIds.length > 0) && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Day Constraints
+                      </label>
+                      <div className="bg-muted/50 rounded-md p-3 text-sm space-y-1">
+                        {dayTemplates
+                          .filter((dt) => dt.constraintIds.length > 0)
+                          .map((dt) => {
+                            const constraintDetails = dt.constraintIds
+                              .map((id) => {
+                                const c = constraints.find((c2) => c2.id === id)
+                                return c?.name || id
+                              })
+                              .join(', ')
+                            return (
+                              <div key={dt.dayOfWeek}>
+                                <span className="font-medium">
+                                  {t(DAY_NAMES[dt.dayOfWeek])}
+                                </span>
+                                : {constraintDetails}
+                              </div>
+                            )
+                          })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setAiModalOpen(false)}
+                  >
+                    {t('common.cancel')}
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      setAiModalOpen(false)
+                      setAiLoading(true)
+                      try {
+                        await generateMealPlan({
+                          data: {
+                            weekStart,
+                            timeframe: aiTimeframe,
+                            budget: aiBudget,
+                            healthMode: aiHealthMode,
+                          },
+                        })
+                        await load()
+                      } catch (err) {
+                        alert(
+                          err instanceof Error
+                            ? err.message
+                            : t('planner.aiGenerationFailed'),
+                        )
+                      } finally {
+                        setAiLoading(false)
+                      }
+                    }}
+                    disabled={aiLoading}
+                  >
+                    {aiLoading
+                      ? t('planner.generating')
+                      : t('planner.generate')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <p className="text-sm text-muted-foreground mt-0.5">
               {t('home.inviteCode')}{' '}
               <button
@@ -577,7 +754,7 @@ function HomePage() {
           <div className="flex items-center gap-2">
             <Button
               variant="default"
-              onClick={handleAiGenerate}
+              onClick={() => setAiModalOpen(true)}
               disabled={aiLoading || isPastWeek}
               className={cn(
                 'gap-2 flex-1 md:flex-none',
@@ -708,12 +885,15 @@ function HomePage() {
                 const dayOfWeek = currentDate.getDay()
                 const weekDays = monthMealPlans[weekStartStr]
                 const dayData = weekDays?.find((d) => d.dayOfWeek === dayOfWeek)
+                const isGenerating = isDateBeingGenerated(currentDate)
 
                 return (
                   <button
                     key={i}
                     onClick={() => {
                       const d = new Date(weekStart)
+                      d.setDate(d.getDate() - ((currentDate.getDay() + 6) % 7))
+                      pendingEditDay.current = dayOfWeek
                       router.navigate({
                         to: '/',
                         search: { week: d.toISOString().slice(0, 10) },
@@ -725,6 +905,7 @@ function HomePage() {
                       isToday
                         ? 'border-primary/60 ring-1 ring-primary/20'
                         : 'border-border hover:border-border/80',
+                      isGenerating && 'animate-pulse',
                     )}
                   >
                     <span
@@ -746,13 +927,21 @@ function HomePage() {
                         ? dayNum
                         : ''}
                     </span>
-                    {dayData?.mealName && isCurrentMonth && (
-                      <p className="text-[10px] md:text-xs font-medium text-foreground mt-0.5 line-clamp-2">
-                        {dayData.mealName}
-                      </p>
-                    )}
-                    {dayData?.recipeUrl && isCurrentMonth && (
-                      <ExternalLinkIcon className="w-2.5 h-2.5 text-muted-foreground mt-0.5" />
+                    {isGenerating ? (
+                      <div className="mt-1 flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                      </div>
+                    ) : (
+                      <>
+                        {dayData?.mealName && isCurrentMonth && (
+                          <p className="text-[10px] md:text-xs font-medium text-foreground mt-0.5 line-clamp-2">
+                            {dayData.mealName}
+                          </p>
+                        )}
+                        {dayData?.recipeUrl && isCurrentMonth && (
+                          <ExternalLinkIcon className="w-2.5 h-2.5 text-muted-foreground mt-0.5" />
+                        )}
+                      </>
                     )}
                   </button>
                 )
@@ -782,6 +971,7 @@ function HomePage() {
                   : (template?.constraintIds ?? [])
                 const date = weekDates[i]
                 const isTodayExact = isToday(date)
+                const isGenerating = isDateBeingGenerated(date)
 
                 return (
                   <button
@@ -792,6 +982,7 @@ function HomePage() {
                       isTodayExact
                         ? 'border-primary/60 ring-1 ring-primary/20'
                         : 'border-border',
+                      isGenerating && 'animate-pulse',
                     )}
                   >
                     <div className="w-11 shrink-0 text-center">
@@ -818,7 +1009,14 @@ function HomePage() {
                     <div className="w-px h-9 bg-border shrink-0" />
 
                     <div className="flex-1 min-w-0">
-                      {day?.mealName ? (
+                      {isGenerating ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                          <span className="text-sm text-muted-foreground">
+                            {t('planner.generating')}
+                          </span>
+                        </div>
+                      ) : day?.mealName ? (
                         <p className="text-sm font-medium text-foreground truncate">
                           {day.mealName}
                         </p>
@@ -827,7 +1025,7 @@ function HomePage() {
                           {t('planner.addDinner')}
                         </p>
                       )}
-                      {effectiveConstraints.length > 0 && (
+                      {effectiveConstraints.length > 0 && !isGenerating && (
                         <div className="mt-1 flex flex-wrap gap-1">
                           {effectiveConstraints.slice(0, 3).map((cid) => {
                             const c = constraintMap.get(cid)
@@ -851,7 +1049,9 @@ function HomePage() {
                       )}
                     </div>
 
-                    <ChevronRightIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                    {!isGenerating && (
+                      <ChevronRightIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                    )}
                   </button>
                 )
               })}
@@ -867,6 +1067,7 @@ function HomePage() {
                   : (template?.constraintIds ?? [])
                 const date = weekDates[i]
                 const isTodayExact = isToday(date)
+                const isGenerating = isDateBeingGenerated(date)
 
                 return (
                   <button
@@ -878,6 +1079,7 @@ function HomePage() {
                       isTodayExact
                         ? 'border-primary/60 ring-1 ring-primary/20'
                         : 'border-border hover:border-border/80',
+                      isGenerating && 'animate-pulse',
                     )}
                   >
                     <div className="mb-3">
@@ -897,7 +1099,11 @@ function HomePage() {
                     </div>
 
                     <div className="min-h-[48px]">
-                      {day?.mealName ? (
+                      {isGenerating ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                        </div>
+                      ) : day?.mealName ? (
                         <p className="text-sm font-medium text-foreground leading-snug">
                           {day.mealName}
                         </p>
@@ -908,7 +1114,7 @@ function HomePage() {
                       )}
                     </div>
 
-                    {day?.recipeUrl && (
+                    {!isGenerating && day?.recipeUrl && (
                       <a
                         href={day.recipeUrl}
                         target="_blank"
@@ -921,7 +1127,7 @@ function HomePage() {
                       </a>
                     )}
 
-                    {effectiveConstraints.length > 0 && (
+                    {effectiveConstraints.length > 0 && !isGenerating && (
                       <div className="mt-3 flex flex-wrap gap-1">
                         {effectiveConstraints.map((cid) => {
                           const c = constraintMap.get(cid)

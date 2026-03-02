@@ -97,6 +97,8 @@
     "weekOf": "Week of",
     "today": "Today",
     "generateWithAi": "Generate with AI",
+    "generate": "Generate",
+    "aiModalDescription": "Configure options for AI meal plan generation",
     "generating": "Generating…",
     "notes": "Notes",
     "recipeUrl": "Recipe URL",

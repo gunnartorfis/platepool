@@ -37,14 +37,6 @@ const TEST_TAGS = [
   { key: 'mediterranean', label: 'Mediterranean', category: 'cuisine' },
   { key: 'nordic', label: 'Nordic', category: 'cuisine' },
   { key: 'american', label: 'American', category: 'cuisine' },
-  { key: 'breakfast', label: 'Breakfast', category: 'meal' },
-  { key: 'lunch', label: 'Lunch', category: 'meal' },
-  { key: 'dinner', label: 'Dinner', category: 'meal' },
-  { key: 'snack', label: 'Snack', category: 'meal' },
-  { key: 'dessert', label: 'Dessert', category: 'meal' },
-  { key: 'appetizer', label: 'Appetizer', category: 'meal' },
-  { key: 'soup', label: 'Soup', category: 'meal' },
-  { key: 'salad', label: 'Salad', category: 'meal' },
 ] as const
 
 interface TagSelectorProps {

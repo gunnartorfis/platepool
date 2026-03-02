@@ -26,7 +26,14 @@ const DAY_NAMES = [
 
 export const generateMealPlan = createServerFn({ method: 'POST' })
   .inputValidator((data: unknown) =>
-    z.object({ weekStart: z.string() }).parse(data),
+    z
+      .object({
+        weekStart: z.string(),
+        timeframe: z.number().min(1).max(4).default(1),
+        budget: z.number().min(1).max(3).default(2),
+        healthMode: z.boolean().default(false),
+      })
+      .parse(data),
   )
   .handler(async ({ data }) => {
     const user = await getUser()
@@ -116,7 +123,7 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
       .map((c) => `  - ${c.name}: maximum ${c.frequency} times per week`)
       .join('\n')
 
-    // Load user recipe links for inspiration
+    // Load user recipe links - prioritize these in meal suggestions
     let linkLines = ''
     const userLinks = await db
       .select()
@@ -125,41 +132,58 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
 
     if (userLinks.length > 0) {
       linkLines =
-        '\n\nAvailable recipe links (for inspiration, optional):\n' +
+        '\n\nYour saved recipes - PRIORITIZE these when planning meals:\n' +
         userLinks
           .slice(0, 10)
-          .map((l) => `  - ${l.title}: ${l.url}`)
+          .map(
+            (l) =>
+              `  - ${l.title}: ${l.url}${l.description ? ` (${l.description})` : ''}`,
+          )
           .join('\n')
     }
 
     const weekDate = new Date(data.weekStart + 'T12:00:00')
+    const weeks = data.timeframe || 1
     const endDate = new Date(weekDate)
-    endDate.setDate(weekDate.getDate() + 6)
+    endDate.setDate(weekDate.getDate() + weeks * 7 - 1)
     const fmt = (d: Date) =>
       d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
 
-    const prompt = `You are a dinner planning assistant helping a family plan their week.
-Week: ${fmt(weekDate)} – ${fmt(endDate)}
+    const budgetLabels = {
+      1: 'Budget-friendly (tight)',
+      2: 'Balanced',
+      3: 'Generous',
+    }
+    const budgetContext = data.budget
+      ? `\nBudget level: ${budgetLabels[data.budget as keyof typeof budgetLabels]} - ${data.budget === 1 ? 'prioritize affordable ingredients, simple recipes, batch cooking' : data.budget === 2 ? 'mix of everyday and occasional treats' : 'varied ingredients, quality proteins, willing to try special ingredients'}`
+      : ''
+
+    const healthContext = data.healthMode
+      ? '\nHealth Mode (Átak): This is a focused cooking sprint - prioritize nutritious, well-balanced meals that fuel the family. Include plenty of vegetables, lean proteins, and wholesome ingredients.'
+      : ''
+
+    const prompt = `You are a dinner planning assistant helping a family plan their meals.
+${weeks === 1 ? `Week: ${fmt(weekDate)} – ${fmt(endDate)}` : `Period: ${fmt(weekDate)} – ${fmt(endDate)} (${weeks} weeks)`}
+
+${budgetContext}${healthContext}
 
 Day constraints (these MUST be respected — they reflect real life constraints like busy evenings or dietary preferences):
 ${dayConstraintLines}${frequencyConstraints ? '\n\nFrequency limits (strictly respect these):\n' + frequencyConstraints : ''}${historyLines}${linkLines}
 
-Generate a 7-day DINNER plan (dinner only — not breakfast or lunch). For each day:
+IMPORTANT: Prioritize using the user's saved recipes listed above when planning meals. Only suggest other meals if you cannot find a suitable match from the saved recipes.
+
+Generate a ${weeks * 7}-day DINNER plan (dinner only — not breakfast or lunch). For each day:
 - Suggest a meal name that fits the constraints
 - Keep it realistic for a family with kids
 
 Respond ONLY with valid JSON in this exact format, no other text:
 [
-  {"day": 0, "meal_name": "Spaghetti Bolognese"},
-  {"day": 1, "meal_name": "Grilled Salmon with Vegetables"},
-  {"day": 2, "meal_name": "Chicken Stir Fry"},
-  {"day": 3, "meal_name": "Homemade Pizza"},
-  {"day": 4, "meal_name": "Fish Tacos"},
-  {"day": 5, "meal_name": "Lamb Chops with Roasted Potatoes"},
-  {"day": 6, "meal_name": "Beef Tacos"}
+  {"week": 0, "day": 0, "meal_name": "Spaghetti Bolognese"},
+  {"week": 0, "day": 1, "meal_name": "Grilled Salmon with Vegetables"},
+  ...
 ]
 
-day 0 = Monday, day 6 = Sunday.`
+week 0 = first week, day 0 = Monday, day 6 = Sunday. Generate exactly ${weeks * 7} entries.`
 
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
@@ -171,16 +195,25 @@ day 0 = Monday, day 6 = Sunday.`
     if (!jsonMatch) throw new Error('AI returned invalid response')
 
     const parsed = JSON.parse(jsonMatch[0]) as Array<{
+      week: number
       day: number
       meal_name: string
       recipe_url?: string
     }>
 
+    // Calculate the actual weekStart for each week
+    const getWeekStart = (weekOffset: number) => {
+      const d = new Date(data.weekStart + 'T12:00:00')
+      d.setDate(d.getDate() + weekOffset * 7)
+      return d.toISOString().slice(0, 10)
+    }
+
     // Upsert each day plan
     for (const item of parsed) {
+      const weekStart = getWeekStart(item.week)
       await upsertHomeDayPlan({
         data: {
-          weekStart: data.weekStart,
+          weekStart,
           dayOfWeek: item.day,
           mealName: item.meal_name,
           constraintIds: [],

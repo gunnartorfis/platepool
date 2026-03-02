@@ -33,7 +33,7 @@ const SaveRecipeInput = z.object({
   url: z.string().url().optional().or(z.literal('')),
   description: z.string().optional(),
   tags: z.array(z.string()),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 })
 
 export const saveRecipe = createServerFn({ method: 'POST' })
@@ -211,11 +211,8 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
       .parse(data),
   )
   .handler(async ({ data }) => {
-    console.log('[DEBUG] generateRecipeTags called with:', data)
-
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
-      console.log('[DEBUG] No GEMINI_API_KEY configured')
       return { error: 'AI not configured' }
     }
 
@@ -228,29 +225,17 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
     const language = data.language || 'en'
     const languageName = language === 'is' ? 'Icelandic' : 'English'
 
-    console.log(
-      '[DEBUG] Calling AI with title:',
-      data.title,
-      'description:',
-      description,
-      'ingredients:',
-      ingredientsList,
-      'language:',
-      languageName,
-    )
-
     const prompt = `Analyze this recipe and generate 3-5 relevant tags in ${languageName}. Consider:
 - Main protein/ingredient (fish, chicken, beef, vegetarian, etc.)
 - Cooking method (grilled, baked, quick, slow, etc.)
 - Dietary category (healthy, comfort, light, etc.)
 - Cuisine type (italian, mexican, asian, etc.)
-- Meal type (dinner, lunch, etc.)
 
 Recipe: ${data.title}
 ${description ? `Description: ${description}` : ''}
 ${ingredientsList ? `Ingredients: ${ingredientsList}` : ''}
 
-Return ONLY a JSON array of strings, like ["fish", "healthy", "baked", "dinner"]. No other text. Tags MUST be in ${languageName}.`
+Return ONLY a JSON array of strings, like ["fish", "healthy", "baked", "quick"]. No other text. Tags MUST be in ${languageName}.`
 
     const result = await model.generateContent(prompt)
     const text = result.response.text()
