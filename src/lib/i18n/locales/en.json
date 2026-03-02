@@ -51,7 +51,7 @@
     "settings": "Settings"
   },
   "home": {
-    "title": "Share Plate",
+    "title": "PlatePool",
     "subtitle": "Plan meals together",
     "inviteCode": "Invite code:",
     "copied": "Copied!",
@@ -67,7 +67,10 @@
     "recipeUrl": "Recipe URL",
     "saving": "Saving...",
     "tapToAdd": "Tap to add",
-    "clickToAdd": "Click to add"
+    "clickToAdd": "Click to add",
+    "renameTitle": "Rename your home",
+    "renameDescription": "Give your home a name that feels like home.",
+    "namePlaceholder": "Home name"
   },
   "planner": {
     "title": "Meal Planner",

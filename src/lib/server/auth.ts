@@ -135,3 +135,32 @@ export const changePassword = createServerFn({ method: 'POST' })
       .set({ passwordHash: newHash })
       .where(eq(users.id, user.id))
   })
+
+export const getHomeSetupCompleted = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const db = await getDbWithSchema()
+    const user = await getUser()
+    if (!user) return false
+
+    const [dbUser] = await db
+      .select({ homeSetupCompleted: users.homeSetupCompleted })
+      .from(users)
+      .where(eq(users.id, user.id))
+      .limit(1)
+
+    return dbUser?.homeSetupCompleted ?? false
+  },
+)
+
+export const markHomeSetupCompleted = createServerFn({
+  method: 'POST',
+}).handler(async () => {
+  const db = await getDbWithSchema()
+  const user = await getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  await db
+    .update(users)
+    .set({ homeSetupCompleted: true })
+    .where(eq(users.id, user.id))
+})

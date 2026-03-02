@@ -23,6 +23,60 @@ function generateInviteCode(): string {
     .join('')
 }
 
+const HOME_NAME_PREFIXES = [
+  'Cozy',
+  'Sunny',
+  'Happy',
+  'Warm',
+  'Bright',
+  'Peaceful',
+  'Joyful',
+  'Gentle',
+  'Loving',
+  'Friendly',
+]
+
+const HOME_NAME_SUFFIXES = [
+  'Home',
+  'House',
+  'Nest',
+  'Haven',
+  'Sanctuary',
+  'Cottage',
+  'Kitchen',
+  'Table',
+  'Gathering',
+  'Family',
+]
+
+function generateRandomHomeName(): string {
+  const prefix =
+    HOME_NAME_PREFIXES[
+      crypto.getRandomValues(new Uint8Array(1))[0] % HOME_NAME_PREFIXES.length
+    ]
+  const suffix =
+    HOME_NAME_SUFFIXES[
+      crypto.getRandomValues(new Uint8Array(1))[0] % HOME_NAME_SUFFIXES.length
+    ]
+  return `${prefix} ${suffix}`
+}
+
+async function createHomeForUser(
+  db: ReturnType<typeof getDbWithSchema>,
+  user: { id: string },
+) {
+  const id = uid()
+  const inviteCode = generateInviteCode()
+  const name = generateRandomHomeName()
+
+  await db.insert(families).values({ id, name, createdBy: user.id, inviteCode })
+  await db
+    .insert(familyMembers)
+    .values({ familyId: id, userId: user.id, role: 'admin' })
+
+  return { id, name, inviteCode }
+}
+
 export const getMyHome = createServerFn({ method: 'GET' }).handler(async () => {
   const db = await getDbWithSchema()
   const user = await getUser()
@@ -34,7 +88,29 @@ export const getMyHome = createServerFn({ method: 'GET' }).handler(async () => {
     .where(eq(familyMembers.userId, user.id))
     .limit(1)
 
-  if (!membership[0]) return null
+  if (!membership[0]) {
+    await createHomeForUser(db, user)
+    const newMembership = await db
+      .select()
+      .from(familyMembers)
+      .where(eq(familyMembers.userId, user.id))
+      .limit(1)
+
+    if (!newMembership[0]) return null
+
+    const [home] = await db
+      .select()
+      .from(families)
+      .where(eq(families.id, newMembership[0].familyId))
+
+    if (!home) return null
+
+    return {
+      ...home,
+      role: newMembership[0].role,
+      members: [],
+    }
+  }
 
   const [home] = await db
     .select()

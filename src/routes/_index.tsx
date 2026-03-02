@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Constraint } from '@/lib/db/schema'
 import type { Dispatch, SetStateAction } from 'react'
@@ -16,6 +16,10 @@ import {
   upsertHomeDayPlan,
 } from '@/lib/server/homes'
 import { generateMealPlan } from '@/lib/server/ai'
+import {
+  getHomeSetupCompleted,
+  markHomeSetupCompleted,
+} from '@/lib/server/auth'
 import { getDayTemplates, getMyConstraints } from '@/lib/server/constraints'
 import { getMyGroups } from '@/lib/server/groups'
 import {
@@ -24,6 +28,14 @@ import {
   weekStartFromParam,
 } from '@/lib/server/meal-plans'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import {
@@ -284,8 +296,22 @@ function HomePage() {
   const [editingDay, setEditingDay] = useState<number | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [editingName, setEditingName] = useState(false)
   const [newName, setNewName] = useState('')
+  const [renameOpen, setRenameOpen] = useState(false)
+  const renameInitialized = useRef(false)
+
+  useEffect(() => {
+    if (renameInitialized.current) return
+    renameInitialized.current = true
+
+    async function checkSetup() {
+      const completed = await getHomeSetupCompleted()
+      if (!completed) {
+        setRenameOpen(true)
+      }
+    }
+    checkSetup()
+  }, [])
   const [copied, setCopied] = useState(false)
 
   const [editMeal, setEditMeal] = useState('')
@@ -307,7 +333,7 @@ function HomePage() {
         ],
       )
       if (!h) {
-        router.navigate({ to: '/families/new' })
+        router.navigate({ to: '/register' })
         return
       }
       setHome(h as typeof home)
@@ -331,6 +357,9 @@ function HomePage() {
       }
     } catch (err) {
       console.error('Failed to load home data:', err)
+      if (!home) {
+        router.navigate({ to: '/register' })
+      }
     }
   }
 
@@ -401,7 +430,6 @@ function HomePage() {
   async function handleUpdateName() {
     if (!newName.trim() || !home) return
     await updateHomeName({ data: { name: newName.trim() } })
-    setEditingName(false)
     setHome({ ...home, name: newName.trim() })
   }
 
@@ -492,40 +520,62 @@ function HomePage() {
         {/* Header */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
           <div>
-            {editingName ? (
-              <div className="flex items-center gap-2">
-                <Input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="text-3xl font-display font-bold h-auto py-1"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleUpdateName()
-                    if (e.key === 'Escape') setEditingName(false)
-                  }}
-                />
-                <Button size="sm" onClick={handleUpdateName}>
-                  {t('common.save')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setEditingName(false)}
-                >
-                  {t('common.cancel')}
-                </Button>
-              </div>
-            ) : (
+            <Dialog
+              open={renameOpen}
+              onOpenChange={async (open) => {
+                if (!open) {
+                  await markHomeSetupCompleted()
+                } else {
+                  setNewName(home.name)
+                }
+                setRenameOpen(open)
+              }}
+            >
               <h1
                 className="text-3xl font-display font-bold tracking-tight cursor-pointer hover:text-primary/80 transition-colors"
-                onClick={() => {
-                  setNewName(home.name)
-                  setEditingName(true)
-                }}
+                onClick={() => setRenameOpen(true)}
               >
                 {home.name}
               </h1>
-            )}
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{t('home.renameTitle')}</DialogTitle>
+                  <DialogDescription>
+                    {t('home.renameDescription')}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <Input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder={t('home.namePlaceholder')}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleUpdateName()
+                        setRenameOpen(false)
+                      }
+                    }}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setRenameOpen(false)}
+                  >
+                    {t('common.cancel')}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      handleUpdateName()
+                      setRenameOpen(false)
+                    }}
+                  >
+                    {t('common.save')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             <p className="text-sm text-muted-foreground mt-0.5">
               {t('home.inviteCode')}{' '}
               <button

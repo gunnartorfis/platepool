@@ -51,7 +51,7 @@
     "settings": "Stillingar"
   },
   "home": {
-    "title": "Share Plate",
+    "title": "PlatePool",
     "subtitle": "Skipuleggðu máltíðir saman",
     "inviteCode": "Boðskóði:",
     "copied": "Afritað!",
@@ -67,7 +67,10 @@
     "recipeUrl": "Recipe URL",
     "saving": "Vista...",
     "tapToAdd": "Smelltu til að bæta við",
-    "clickToAdd": "Smelltu til að bæta við"
+    "clickToAdd": "Smelltu til að bæta við",
+    "renameTitle": "Endurnefna heimili",
+    "renameDescription": "Gefðu heimilinu nafn sem þér líður heimilt.",
+    "namePlaceholder": "Heiti heimilis"
   },
   "planner": {
     "title": "Matseðill",

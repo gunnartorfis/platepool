@@ -16,11 +16,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConstraintsRouteImport } from './routes/constraints'
 import { Route as IndexRouteImport } from './routes/_index'
 import { Route as GroupsIndexRouteImport } from './routes/groups/index'
-import { Route as FamiliesIndexRouteImport } from './routes/families/index'
 import { Route as GroupsNewRouteImport } from './routes/groups/new'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups/$groupId'
-import { Route as FamiliesNewRouteImport } from './routes/families/new'
-import { Route as FamiliesFamilyIdRouteImport } from './routes/families/$familyId'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -56,11 +53,6 @@ const GroupsIndexRoute = GroupsIndexRouteImport.update({
   path: '/groups/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FamiliesIndexRoute = FamiliesIndexRouteImport.update({
-  id: '/families/',
-  path: '/families/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const GroupsNewRoute = GroupsNewRouteImport.update({
   id: '/groups/new',
   path: '/groups/new',
@@ -71,16 +63,6 @@ const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   path: '/groups/$groupId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FamiliesNewRoute = FamiliesNewRouteImport.update({
-  id: '/families/new',
-  path: '/families/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FamiliesFamilyIdRoute = FamiliesFamilyIdRouteImport.update({
-  id: '/families/$familyId',
-  path: '/families/$familyId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,11 +71,8 @@ export interface FileRoutesByFullPath {
   '/recipes': typeof RecipesRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
-  '/families/$familyId': typeof FamiliesFamilyIdRoute
-  '/families/new': typeof FamiliesNewRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups/new': typeof GroupsNewRoute
-  '/families/': typeof FamiliesIndexRoute
   '/groups/': typeof GroupsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -103,11 +82,8 @@ export interface FileRoutesByTo {
   '/recipes': typeof RecipesRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
-  '/families/$familyId': typeof FamiliesFamilyIdRoute
-  '/families/new': typeof FamiliesNewRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups/new': typeof GroupsNewRoute
-  '/families': typeof FamiliesIndexRoute
   '/groups': typeof GroupsIndexRoute
 }
 export interface FileRoutesById {
@@ -118,11 +94,8 @@ export interface FileRoutesById {
   '/recipes': typeof RecipesRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
-  '/families/$familyId': typeof FamiliesFamilyIdRoute
-  '/families/new': typeof FamiliesNewRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups/new': typeof GroupsNewRoute
-  '/families/': typeof FamiliesIndexRoute
   '/groups/': typeof GroupsIndexRoute
 }
 export interface FileRouteTypes {
@@ -134,11 +107,8 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/register'
     | '/settings'
-    | '/families/$familyId'
-    | '/families/new'
     | '/groups/$groupId'
     | '/groups/new'
-    | '/families/'
     | '/groups/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -148,11 +118,8 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/register'
     | '/settings'
-    | '/families/$familyId'
-    | '/families/new'
     | '/groups/$groupId'
     | '/groups/new'
-    | '/families'
     | '/groups'
   id:
     | '__root__'
@@ -162,11 +129,8 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/register'
     | '/settings'
-    | '/families/$familyId'
-    | '/families/new'
     | '/groups/$groupId'
     | '/groups/new'
-    | '/families/'
     | '/groups/'
   fileRoutesById: FileRoutesById
 }
@@ -177,11 +141,8 @@ export interface RootRouteChildren {
   RecipesRoute: typeof RecipesRoute
   RegisterRoute: typeof RegisterRoute
   SettingsRoute: typeof SettingsRoute
-  FamiliesFamilyIdRoute: typeof FamiliesFamilyIdRoute
-  FamiliesNewRoute: typeof FamiliesNewRoute
   GroupsGroupIdRoute: typeof GroupsGroupIdRoute
   GroupsNewRoute: typeof GroupsNewRoute
-  FamiliesIndexRoute: typeof FamiliesIndexRoute
   GroupsIndexRoute: typeof GroupsIndexRoute
 }
 
@@ -236,13 +197,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/families/': {
-      id: '/families/'
-      path: '/families'
-      fullPath: '/families/'
-      preLoaderRoute: typeof FamiliesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/groups/new': {
       id: '/groups/new'
       path: '/groups/new'
@@ -257,20 +211,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsGroupIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/families/new': {
-      id: '/families/new'
-      path: '/families/new'
-      fullPath: '/families/new'
-      preLoaderRoute: typeof FamiliesNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/families/$familyId': {
-      id: '/families/$familyId'
-      path: '/families/$familyId'
-      fullPath: '/families/$familyId'
-      preLoaderRoute: typeof FamiliesFamilyIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -281,11 +221,8 @@ const rootRouteChildren: RootRouteChildren = {
   RecipesRoute: RecipesRoute,
   RegisterRoute: RegisterRoute,
   SettingsRoute: SettingsRoute,
-  FamiliesFamilyIdRoute: FamiliesFamilyIdRoute,
-  FamiliesNewRoute: FamiliesNewRoute,
   GroupsGroupIdRoute: GroupsGroupIdRoute,
   GroupsNewRoute: GroupsNewRoute,
-  FamiliesIndexRoute: FamiliesIndexRoute,
   GroupsIndexRoute: GroupsIndexRoute,
 }
 export const routeTree = rootRouteImport

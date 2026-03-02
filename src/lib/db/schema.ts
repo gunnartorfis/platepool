@@ -7,6 +7,9 @@ export const users = sqliteTable('users', {
   name: text('name').notNull(),
   passwordHash: text('password_hash').notNull(),
   avatarUrl: text('avatar_url'),
+  homeSetupCompleted: integer('home_setup_completed', { mode: 'boolean' })
+    .notNull()
+    .default(false),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),

@@ -207,7 +207,7 @@ export const fetchRecipeMetadata = createServerFn({ method: 'POST' })
     try {
       const response = await fetch(data.url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; SharePlate/1.0)',
+          'User-Agent': 'Mozilla/5.0 (compatible; PlatePool/1.0)',
         },
       })
       const html = await response.text()
