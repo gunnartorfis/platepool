@@ -26,7 +26,7 @@ import {
 
 const NAV = [
   { to: '/', labelKey: 'nav.home', icon: HomeIcon },
-  { to: '/groups', labelKey: 'nav.groups', icon: UsersIcon },
+  { to: '/subscriptions', labelKey: 'nav.subscriptions', icon: UsersIcon },
   { to: '/recipes', labelKey: 'nav.recipes', icon: RecipeIcon },
   { to: '/constraints', labelKey: 'nav.constraints', icon: ConstraintsIcon },
 ]

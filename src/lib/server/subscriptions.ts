@@ -83,6 +83,43 @@ export const unsubscribeFromFamily = createServerFn({ method: 'POST' })
       )
   })
 
+export const subscribeToFamilyByCode = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) =>
+    z.object({ inviteCode: z.string() }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const db = await getDbWithSchema()
+    const user = await getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    const family = await db
+      .select()
+      .from(families)
+      .where(eq(families.inviteCode, data.inviteCode.toUpperCase()))
+      .limit(1)
+
+    if (!family[0]) throw new Error('Invalid invite code')
+
+    const existing = await db
+      .select()
+      .from(familySubscriptions)
+      .where(
+        and(
+          eq(familySubscriptions.familyId, family[0].id),
+          eq(familySubscriptions.userId, user.id),
+        ),
+      )
+      .limit(1)
+
+    if (existing[0]) return { id: family[0].id, name: family[0].name }
+
+    await db
+      .insert(familySubscriptions)
+      .values({ familyId: family[0].id, userId: user.id })
+
+    return { id: family[0].id, name: family[0].name }
+  })
+
 export const getFamilySubscribers = createServerFn({ method: 'GET' })
   .inputValidator((data: unknown) =>
     z.object({ familyId: z.string() }).parse(data),

@@ -45,10 +45,23 @@
   "nav": {
     "home": "Heim",
     "planner": "Matseðill",
-    "groups": "Hópar",
+    "subscriptions": "Fylgjast með",
     "recipes": "Uppskriftir",
     "constraints": "Takmarkanir",
     "settings": "Stillingar"
+  },
+  "subscriptions": {
+    "title": "Fylgjast með",
+    "mySubscriptions": "Fylgjast með",
+    "myHomes": "Mín heimili",
+    "discover": "Uppgötva",
+    "noSubscriptions": "Fylgist ekki með neinum enn",
+    "nothingToDiscover": "Ekkert að uppgötva",
+    "unsubscribe": "Hæta að fylgjast",
+    "subscribe": "Fylgjast",
+    "code": "Kóði",
+    "enterCode": "Slá inn boðskóða...",
+    "join": "Ganga í"
   },
   "home": {
     "title": "PlatePool",
