@@ -24,6 +24,61 @@ const DAY_NAMES = [
   'Sunday',
 ]
 
+const MAX_VALIDATION_LOOPS = 3
+
+interface ValidationIssue {
+  type: 'similarity' | 'frequency' | 'constraint'
+  message: string
+  dayIndex?: number
+}
+
+async function validateMealPlan(
+  mealPlan: Array<{ week: number; day: number; meal_name: string }>,
+  historyLines: string,
+  frequencyConstraints: string,
+  apiKey: string,
+): Promise<ValidationIssue[]> {
+  const issues: ValidationIssue[] = []
+
+  const mealList = mealPlan.map((m, i) => `${i}: ${m.meal_name}`).join('\n')
+
+  const validationPrompt = `You are a meal plan validator. Check this meal plan for issues.
+
+MEAL PLAN TO VALIDATE:
+${mealList}
+
+${historyLines ? historyLines + '\n' : ''}${frequencyConstraints ? frequencyConstraints + '\n' : ''}
+
+Check for these issues:
+1. SIMILARITY: Are any meals too similar? (e.g., "Fajitas with beef" and "Fajitas with chicken" are too similar - same dish type with minor variation)
+2. FREQUENCY: Are any meal types repeated too often? (e.g., pasta 3+ times, tacos multiple days)
+3. DIVERSITY: Is there good variety across the week?
+
+Respond ONLY with valid JSON, no other text:
+{"issues": [{"type": "similarity|frequency|diversity", "message": "describe the issue", "dayIndex": optional_day_number}]}
+
+If no issues, respond: {"issues": []}`
+
+  const genAI = new GoogleGenerativeAI(apiKey)
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+  const result = await model.generateContent(validationPrompt)
+  const text = result.response.text()
+
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[0])
+      if (parsed.issues && Array.isArray(parsed.issues)) {
+        issues.push(...parsed.issues)
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }
+
+  return issues
+}
+
 export const generateMealPlan = createServerFn({ method: 'POST' })
   .inputValidator((data: unknown) =>
     z
@@ -183,7 +238,7 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
       ? '\nHealth Mode (Átak): This is a focused cooking sprint - prioritize nutritious, well-balanced meals that fuel the family. Include plenty of vegetables, lean proteins, and wholesome ingredients.'
       : ''
 
-    const prompt = `You are a dinner planning assistant helping a family plan their meals.
+    let prompt = `You are a dinner planning assistant helping a family plan their meals.
 ${weeks === 1 ? `Week: ${fmt(weekDate)} – ${fmt(endDate)}` : `Period: ${fmt(weekDate)} – ${fmt(endDate)} (${weeks} weeks)`}
 
 ${budgetContext}${healthContext}
@@ -206,30 +261,54 @@ Respond ONLY with valid JSON in this exact format, no other text:
 
 week 0 = first week, day 0 = Monday, day 6 = Sunday. Generate exactly ${weeks * 7} entries.`
 
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-    const result = await model.generateContent(prompt)
-    const text = result.response.text()
-
-    // Parse JSON from response
-    const jsonMatch = text.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) throw new Error('AI returned invalid response')
-
-    const parsed = JSON.parse(jsonMatch[0]) as Array<{
+    let parsed: Array<{
       week: number
       day: number
       meal_name: string
       recipe_url?: string
-    }>
+    }> = []
 
-    // Calculate the actual weekStart for each week
     const getWeekStart = (weekOffset: number) => {
       const d = new Date(data.weekStart + 'T12:00:00')
       d.setDate(d.getDate() + weekOffset * 7)
       return d.toISOString().slice(0, 10)
     }
 
-    // Upsert each day plan
+    for (let loop = 0; loop < MAX_VALIDATION_LOOPS; loop++) {
+      const genAI = new GoogleGenerativeAI(apiKey)
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const result = await model.generateContent(prompt)
+      const text = result.response.text()
+
+      const jsonMatch = text.match(/\[[\s\S]*\]/)
+      if (!jsonMatch) throw new Error('AI returned invalid response')
+
+      parsed = JSON.parse(jsonMatch[0]) as Array<{
+        week: number
+        day: number
+        meal_name: string
+        recipe_url?: string
+      }>
+
+      const issues = await validateMealPlan(
+        parsed,
+        historyLines,
+        frequencyConstraints,
+        apiKey,
+      )
+
+      if (issues.length === 0) {
+        break
+      }
+
+      const issueMessages = issues.map((i) => `- ${i.message}`).join('\n')
+
+      prompt += `\n\nVALIDATION FEEDBACK (must fix these issues):
+${issueMessages}
+
+Please regenerate the meal plan addressing these issues.`
+    }
+
     for (const item of parsed) {
       const weekStart = getWeekStart(item.week)
       await upsertHomeDayPlan({
