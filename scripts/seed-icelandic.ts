@@ -5,7 +5,7 @@ const icelandicRecipes = [
   {
     title: 'Kjötsúpa',
     description:
-      'Traditional Icelandic meat soup with lamb, potatoes, carrots, and cabbage. A hearty comfort food perfect for cold evenings.',
+      'Traditional Icelandic lamb soup with potatoes, carrots, cabbage, and fresh herbs. The ultimate comfort food.',
     url: '',
     tags: JSON.stringify([
       'lamb',
@@ -19,24 +19,9 @@ const icelandicRecipes = [
     curated: 1,
   },
   {
-    title: 'Pylsur',
-    description:
-      'Icelandic hot dogs - the famous street food. Mustard, ketchup, raw onion, crispy fried onion, and remoulade.',
-    url: '',
-    tags: JSON.stringify([
-      'hotdog',
-      'streetfood',
-      'quick',
-      'comfort',
-      'dinner',
-    ]),
-    stars: 4,
-    curated: 1,
-  },
-  {
     title: 'Plokkfiskur',
     description:
-      'Traditional Icelandic fish stew with cod or haddock, potatoes, onion, and butter. Served with dark rye bread.',
+      'Traditional fish stew with cod or haddock, potatoes, onion, and butter. Served with dark rye bread.',
     url: '',
     tags: JSON.stringify([
       'fish',
@@ -45,296 +30,28 @@ const icelandicRecipes = [
       'comfort',
       'dinner',
     ]),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'Hangikjöt',
-    description:
-      'Smoked lamb - a traditional Icelandic delicacy. Often served at Christmas with peas, potatoes, and brown sauce.',
-    url: '',
-    tags: JSON.stringify([
-      'lamb',
-      'smoked',
-      'traditional',
-      'christmas',
-      'dinner',
-    ]),
     stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Harðfiskur',
-    description:
-      'Dried fish (usually cod or haddock) served with butter. A traditional Icelandic staple and snack.',
-    url: '',
-    tags: JSON.stringify([
-      'fish',
-      'dried',
-      'traditional',
-      'snack',
-      'appetizer',
-    ]),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'Rúgbrauð',
-    description:
-      'Traditional Icelandic dark rye bread, often baked in geothermal springs. Sweet and dense, served with butter.',
-    url: '',
-    tags: JSON.stringify(['bread', 'traditional', 'sides', 'christmas']),
-    stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Kleinur',
-    description:
-      'Traditional Icelandic twisted donuts. A classic pastry often enjoyed with coffee or as a snack.',
-    url: '',
-    tags: JSON.stringify([
-      'dessert',
-      'pastry',
-      'traditional',
-      'snack',
-      'christmas',
-    ]),
-    stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Skyr',
-    description:
-      'Icelandic yogurt - thick, creamy, and high in protein. Served with berries, honey, or granola.',
-    url: '',
-    tags: JSON.stringify(['breakfast', 'dairy', 'healthy', 'dessert', 'snack']),
-    stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Lambasulta',
-    description:
-      'Lamb head cheese - a traditional Icelandic dish. Served sliced with potatoes and pickled beets.',
-    url: '',
-    tags: JSON.stringify(['lamb', 'traditional', 'offal', 'dinner']),
-    stars: 3,
-    curated: 1,
-  },
-  {
-    title: 'Hrútspungar',
-    description:
-      "Pickled ram's testicles - a traditional Icelandic delicacy. Usually served as a starter with bread.",
-    url: '',
-    tags: JSON.stringify(['lamb', 'traditional', 'offal', 'appetizer']),
-    stars: 2,
     curated: 1,
   },
   {
     title: 'Fiskekaker',
     description:
-      'Icelandic fish cakes made with cod or haddock, potatoes, and herbs. Pan-fried and served with vegetables.',
-    url: '',
-    tags: JSON.stringify(['fish', 'seafood', 'traditional', 'dinner']),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'Steikur',
-    description:
-      'Icelandic steak - typically lamb or beef, simply prepared with salt and pepper. Served with potatoes and gravy.',
-    url: '',
-    tags: JSON.stringify(['lamb', 'beef', 'roast', 'dinner', 'sunday']),
-    stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Kjötbagar',
-    description:
-      'Icelandic meat pastries - ground lamb wrapped in dough and baked. A popular comfort food.',
-    url: '',
-    tags: JSON.stringify(['lamb', 'pastry', 'comfort', 'dinner', 'baked']),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'Svið',
-    description:
-      "Singed sheep's head - a traditional Icelandic dish. Served with potatoes and pickled cabbage.",
-    url: '',
-    tags: JSON.stringify(['lamb', 'traditional', 'offal', 'dinner']),
-    stars: 3,
-    curated: 1,
-  },
-  {
-    title: 'Línar súpa',
-    description:
-      'Creamy potato leek soup. Simple, comforting, and perfect for cold days.',
-    url: '',
-    tags: JSON.stringify(['soup', 'vegetarian', 'comfort', 'dinner', 'winter']),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'Blue Soup',
-    description:
-      'Traditional Icelandic bilberry soup. Made with wild blueberries, served hot or cold with cream.',
-    url: '',
-    tags: JSON.stringify([
-      'dessert',
-      'soup',
-      'traditional',
-      'berries',
-      'summer',
-    ]),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'Vínarterta',
-    description:
-      'Icelandic layer cake with chocolate filling and whipped cream. A birthday favorite.',
-    url: '',
-    tags: JSON.stringify(['dessert', 'cake', 'birthday', 'chocolate']),
-    stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Kanilsnúðar',
-    description:
-      'Cinnamon rolls Icelandic style - soft, fluffy, and covered in icing. A beloved bakery treat.',
-    url: '',
-    tags: JSON.stringify(['dessert', 'pastry', 'baking', 'snack', 'coffee']),
-    stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Sausages & beans',
-    description:
-      'Icelandic style baked beans with sausages. A classic comfort dinner, often served with rye bread.',
-    url: '',
-    tags: JSON.stringify(['comfort', 'dinner', 'quick', 'pork']),
-    stars: 3,
-    curated: 1,
-  },
-  {
-    title: 'Gnocchi með rósmarín',
-    description:
-      'Homemade potato gnocchi with rosemary butter. A simple but satisfying Italian-Icelandic fusion.',
-    url: '',
-    tags: JSON.stringify([
-      'pasta',
-      'potato',
-      'comfort',
-      'dinner',
-      'vegetarian',
-    ]),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'F元宵',
-    description:
-      "Lamb and potato stew - Iceland's answer to Irish stew. Slow-cooked and incredibly comforting.",
-    url: '',
-    tags: JSON.stringify([
-      'lamb',
-      'stew',
-      'traditional',
-      'comfort',
-      'dinner',
-      'winter',
-    ]),
-    stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Grjónagrautur',
-    description:
-      'Rice porridge - a traditional Icelandic breakfast. Served with sugar, cinnamon, and milk.',
-    url: '',
-    tags: JSON.stringify(['breakfast', 'porridge', 'traditional', 'comfort']),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'Hirsegrautur',
-    description:
-      'Millet porridge - a healthy traditional Icelandic breakfast grain.',
-    url: '',
-    tags: JSON.stringify(['breakfast', 'porridge', 'traditional', 'healthy']),
-    stars: 3,
-    curated: 1,
-  },
-  {
-    title: 'Skúffukaka',
-    description:
-      'Icelandic chocolate traybake - gooey chocolate cake with coconut. A popular bake sale treat.',
-    url: '',
-    tags: JSON.stringify(['dessert', 'cake', 'baking', 'chocolate']),
-    stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Eplakaka',
-    description:
-      'Icelandic apple cake - spiced apple cake topped with cinnamon sugar. Served warm with cream.',
-    url: '',
-    tags: JSON.stringify(['dessert', 'cake', 'baking', 'apple', 'autumn']),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'Pönnukökur',
-    description:
-      'Icelandic thin pancakes. Served with sugar, berries, or whipped cream. A family favorite.',
-    url: '',
-    tags: JSON.stringify(['dessert', 'pancakes', 'traditional', 'breakfast']),
-    stars: 5,
-    curated: 1,
-  },
-  {
-    title: 'Saltkjöt & baunir',
-    description:
-      'Salt-cured lamb with peas and potatoes. A traditional Sunday dinner.',
-    url: '',
-    tags: JSON.stringify([
-      'lamb',
-      'traditional',
-      'sunday',
-      'dinner',
-      'christmas',
-    ]),
-    stars: 4,
-    curated: 1,
-  },
-  {
-    title: 'Kálakókur',
-    description:
-      'Cabbage cakes - traditional Icelandic vegetarian dish with cabbage, potatoes, and herbs.',
-    url: '',
-    tags: JSON.stringify(['vegetarian', 'traditional', 'vegetables', 'dinner']),
-    stars: 3,
-    curated: 1,
-  },
-  {
-    title: 'Brennivín & sild',
-    description:
-      'Cured herring with brennivín (Icelandic spirit). Traditional shot or appetizer.',
+      'Icelandic fish cakes - pan-fried with cod or haddock, potatoes, and fresh dill. Classic dinner.',
     url: '',
     tags: JSON.stringify([
       'fish',
-      'appetizer',
+      'seafood',
       'traditional',
-      'christmas',
-      'alcohol',
+      'dinner',
+      'comfort',
     ]),
-    stars: 3,
+    stars: 5,
     curated: 1,
   },
   {
     title: 'Lax með kartöflum',
     description:
-      'Pan-seared salmon with potatoes. Simple, healthy, and delicious Icelandic home cooking.',
+      'Pan-seared or baked salmon with boiled potatoes and vegetables. Simple and healthy.',
     url: '',
     tags: JSON.stringify(['fish', 'seafood', 'healthy', 'dinner', 'quick']),
     stars: 5,
@@ -343,16 +60,334 @@ const icelandicRecipes = [
   {
     title: 'Fiskur í grænmetisósa',
     description:
-      'Fish in vegetable sauce - cod or haddock baked with tomatoes, peppers, and onions.',
+      'Baked cod or haddock with tomatoes, peppers, onions, and herbs. One-pan dinner.',
     url: '',
     tags: JSON.stringify(['fish', 'seafood', 'baked', 'dinner', 'healthy']),
     stars: 4,
     curated: 1,
   },
+  {
+    title: 'Kjötbagar',
+    description:
+      'Icelandic meat pastries - ground lamb wrapped in flaky dough and baked. Comfort food classic.',
+    url: '',
+    tags: JSON.stringify(['lamb', 'pastry', 'comfort', 'dinner', 'baked']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Kjötsósa og kartöflur',
+    description:
+      'Lamb in brown gravy with boiled potatoes and peas. Traditional Sunday dinner.',
+    url: '',
+    tags: JSON.stringify(['lamb', 'roast', 'traditional', 'sunday', 'dinner']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Steikur',
+    description:
+      'Simple roast steak - lamb or beef with potatoes, gravy, and greens. Family favorite.',
+    url: '',
+    tags: JSON.stringify(['lamb', 'beef', 'roast', 'dinner', 'sunday']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Línar súpa',
+    description:
+      'Creamy potato and leek soup with fresh herbs. Perfect for cold evenings.',
+    url: '',
+    tags: JSON.stringify(['soup', 'vegetarian', 'comfort', 'dinner', 'winter']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Sausages & beans',
+    description:
+      'Icelandic style baked beans with pylsur. Comfort dinner with rye bread.',
+    url: '',
+    tags: JSON.stringify(['comfort', 'dinner', 'quick', 'pork']),
+    stars: 3,
+    curated: 1,
+  },
+  {
+    title: 'Kálakókur',
+    description:
+      'Traditional cabbage cakes with potatoes and herbs. Vegetarian comfort food.',
+    url: '',
+    tags: JSON.stringify(['vegetarian', 'traditional', 'vegetables', 'dinner']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Fiskur að hressa',
+    description:
+      'Pan-fried fish with potatoes and vegetables. Quick and easy dinner.',
+    url: '',
+    tags: JSON.stringify(['fish', 'seafood', 'quick', 'dinner', 'healthy']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Kartöflugratín',
+    description:
+      'Creamy potato gratin - scalloped potatoes with cream and cheese. Comfort side or main.',
+    url: '',
+    tags: JSON.stringify(['vegetarian', 'comfort', 'dinner', 'sides']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Bringuści',
+    description:
+      'Polish-style beef rolls in tomato sauce. Popular freezer-to-oven dinner.',
+    url: '',
+    tags: JSON.stringify(['beef', 'slow', 'dinner', 'comfort']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Kjúklingur með rósmarín',
+    description:
+      'Roast chicken with rosemary, potatoes, and vegetables. Sunday classic.',
+    url: '',
+    tags: JSON.stringify(['chicken', 'roast', 'sunday', 'dinner']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Kjúklingur að hressa',
+    description:
+      'Pan-fried chicken thighs with herbs and vegetables. Quick weeknight dinner.',
+    url: '',
+    tags: JSON.stringify(['chicken', 'quick', 'dinner', 'weeknight']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Pasta bolognese',
+    description:
+      'Spaghetti bolognese - classic comfort food. Ground beef in tomato sauce.',
+    url: '',
+    tags: JSON.stringify(['pasta', 'beef', 'comfort', 'dinner', 'quick']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Pasta með laukum ogosti',
+    description:
+      'Pasta with caramelized onions and cheese. Simple vegetarian dinner.',
+    url: '',
+    tags: JSON.stringify(['pasta', 'vegetarian', 'quick', 'dinner']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Lasagna',
+    description: 'Classic meat lasagna with béchamel. Family dinner favorite.',
+    url: '',
+    tags: JSON.stringify(['pasta', 'beef', 'comfort', 'dinner', 'baked']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Kryddaður fiskur',
+    description:
+      'Seasoned baked fish with potatoes. Simple and healthy weeknight dinner.',
+    url: '',
+    tags: JSON.stringify(['fish', 'seafood', 'healthy', 'dinner', 'quick']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Súrmat',
+    description:
+      'Icelandic-style stir-fry with meat, vegetables, and soy sauce. Quick dinner.',
+    url: '',
+    tags: JSON.stringify(['beef', 'quick', 'dinner', 'asian']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Gulrótarsoð',
+    description:
+      'Glazed carrots with butter and brown sugar. Simple side or light dinner.',
+    url: '',
+    tags: JSON.stringify(['vegetarian', 'sides', 'dinner', 'simple']),
+    stars: 3,
+    curated: 1,
+  },
+  {
+    title: 'Baunir í súpu',
+    description: 'Bean soup with vegetables. Budget-friendly and filling.',
+    url: '',
+    tags: JSON.stringify(['vegetarian', 'soup', 'budget', 'dinner']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Ragú',
+    description: 'Icelandic beef ragù with pasta. Hearty family dinner.',
+    url: '',
+    tags: JSON.stringify(['beef', 'pasta', 'comfort', 'dinner']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Kryddmjólkurkjur',
+    description:
+      'Spiced meatballs in creamy sauce with potatoes. Kids favorite.',
+    url: '',
+    tags: JSON.stringify(['beef', 'comfort', 'dinner', 'family']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Kálkjöt',
+    description:
+      'Cabbage rolls stuffed with ground lamb and rice. Traditional comfort food.',
+    url: '',
+    tags: JSON.stringify(['lamb', 'traditional', 'comfort', 'dinner']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Spenakóta',
+    description: 'Spinach and feta pie. Vegetarian dinner or side dish.',
+    url: '',
+    tags: JSON.stringify(['vegetarian', 'baked', 'dinner', 'greek']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Mexíkóskur bollahringur',
+    description:
+      'Mexican-style cornbread with cheese and peppers. Easy one-pan dinner.',
+    url: '',
+    tags: JSON.stringify(['vegetarian', 'mexican', 'baked', 'dinner']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Pizzur',
+    description:
+      'Homemade pizza with various toppings. Family dinner activity.',
+    url: '',
+    tags: JSON.stringify(['vegetarian', 'pizza', 'family', 'dinner', 'fun']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Hamborgarar',
+    description: 'Homemade beef burgers with fries. Classic family dinner.',
+    url: '',
+    tags: JSON.stringify(['beef', 'quick', 'dinner', 'family', 'grilling']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Tacos',
+    description:
+      'Ground beef tacos with tortillas, cheese, and fresh toppings.',
+    url: '',
+    tags: JSON.stringify(['beef', 'mexican', 'dinner', 'family', 'quick']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Kjúklinganuggets og kartöflur',
+    description:
+      'Homemade chicken nuggets with oven fries. Kid-friendly dinner.',
+    url: '',
+    tags: JSON.stringify(['chicken', 'kids', 'dinner', 'baked']),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Grænmetisúpa',
+    description:
+      'Hearty vegetable soup with seasonal vegetables. Light and healthy.',
+    url: '',
+    tags: JSON.stringify(['vegetarian', 'soup', 'healthy', 'dinner', 'winter']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Fiskatæta',
+    description:
+      'Fish stew with potatoes, carrots, and cream. Coastal classic.',
+    url: '',
+    tags: JSON.stringify([
+      'fish',
+      'seafood',
+      'traditional',
+      'comfort',
+      'dinner',
+    ]),
+    stars: 5,
+    curated: 1,
+  },
+  {
+    title: 'Lambaeggi',
+    description: 'Lamb and potato hash. Budget-friendly comfort dinner.',
+    url: '',
+    tags: JSON.stringify(['lamb', 'budget', 'comfort', 'dinner']),
+    stars: 3,
+    curated: 1,
+  },
+  {
+    title: 'Kalkúnsnitslar',
+    description: 'Turkey escalopes with mushroom sauce and potatoes.',
+    url: '',
+    tags: JSON.stringify(['turkey', 'quick', 'dinner', 'weeknight']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Gratineraður blómkál',
+    description: 'Cauliflower cheese gratin. Vegetarian main or side.',
+    url: '',
+    tags: JSON.stringify(['vegetarian', 'baked', 'sides', 'dinner']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Bratwurst með kartöflum',
+    description: 'German-style sausages with potatoes and mustard.',
+    url: '',
+    tags: JSON.stringify(['pork', 'german', 'dinner', 'quick']),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Linsubaunir',
+    description:
+      'Lentils with vegetables and spices. Healthy vegetarian dinner.',
+    url: '',
+    tags: JSON.stringify([
+      'vegetarian',
+      'healthy',
+      'budget',
+      'dinner',
+      'indian',
+    ]),
+    stars: 4,
+    curated: 1,
+  },
+  {
+    title: 'Kaffi og kaka',
+    description:
+      'Coffee and cake night - varied Icelandic baked goods with coffee.',
+    url: '',
+    tags: JSON.stringify(['light', 'dinner', 'snack', 'baking']),
+    stars: 3,
+    curated: 1,
+  },
 ]
 
 async function seed() {
-  console.log('Seeding Icelandic recipes...')
+  console.log('Seeding Icelandic dinner recipes...')
 
   for (const recipe of icelandicRecipes) {
     await db.insert(recipeLinks).values({
@@ -363,7 +398,7 @@ async function seed() {
     })
   }
 
-  console.log(`Seeded ${icelandicRecipes.length} Icelandic recipes`)
+  console.log(`Seeded ${icelandicRecipes.length} Icelandic dinner recipes`)
 }
 
 seed()
