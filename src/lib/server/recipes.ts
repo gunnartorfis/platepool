@@ -216,9 +216,9 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
       return { error: 'AI not configured' }
     }
 
-    const { GoogleGenerativeAI } = await import('@google/generative-ai')
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' })
+    const { createGoogleGenerativeAI } = await import('@ai-sdk/google')
+    const { generateText } = await import('ai')
+    const google = createGoogleGenerativeAI({ apiKey })
 
     const ingredientsList = data.ingredients?.slice(0, 10).join(', ') || ''
     const description = data.description || ''
@@ -237,8 +237,10 @@ ${ingredientsList ? `Ingredients: ${ingredientsList}` : ''}
 
 Return ONLY a JSON array of strings, like ["fish", "healthy", "baked", "quick"]. No other text. Tags MUST be in ${languageName}.`
 
-    const result = await model.generateContent(prompt)
-    const text = result.response.text()
+    const { text } = await generateText({
+      model: google('gemini-3.1-flash-lite-preview'),
+      prompt,
+    })
 
     const jsonMatch = text.match(/\[[\s\S]*\]/)
     if (!jsonMatch) {
