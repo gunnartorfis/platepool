@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { generateText } from 'ai'
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDbWithSchema } from '../db'
@@ -59,10 +60,11 @@ Respond ONLY with valid JSON, no other text:
 
 If no issues, respond: {"issues": []}`
 
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' })
-  const result = await model.generateContent(validationPrompt)
-  const text = result.response.text()
+  const google = createGoogleGenerativeAI({ apiKey })
+  const { text } = await generateText({
+    model: google('gemini-3.1-flash-lite-preview'),
+    prompt: validationPrompt,
+  })
 
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (jsonMatch) {
@@ -303,10 +305,11 @@ week 0 = first week, day 0 = Monday, day 6 = Sunday. Generate exactly ${weeks * 
     }
 
     for (let loop = 0; loop < MAX_VALIDATION_LOOPS; loop++) {
-      const genAI = new GoogleGenerativeAI(apiKey)
-      const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' })
-      const result = await model.generateContent(prompt)
-      const text = result.response.text()
+      const google = createGoogleGenerativeAI({ apiKey })
+      const { text } = await generateText({
+        model: google('gemini-3.1-flash-lite-preview'),
+        prompt,
+      })
 
       const jsonMatch = text.match(/\[[\s\S]*\]/)
       if (!jsonMatch) throw new Error('AI returned invalid response')
