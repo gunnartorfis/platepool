@@ -1,5 +1,6 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import type { Constraint } from '@/lib/db/schema'
 import type {
@@ -728,48 +729,51 @@ function HomePage() {
         {tab === 'members' && <MembersTab members={home.members} />}
       </div>
 
-      {/* Day editor — single instance, responsive via CSS */}
-      {drawer.editingDay !== null && (
-        <>
-          <div
-            className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm"
-            onClick={drawer.close}
-          />
-          <div
-            className={cn(
-              'fixed z-[70] bg-card border-border flex flex-col shadow-2xl',
-              // Mobile: bottom sheet
-              'inset-x-0 bottom-0 max-h-[88vh] overflow-hidden rounded-t-2xl border-t safe-area-bottom',
-              // Desktop: right panel
-              'md:inset-x-auto md:right-0 md:top-0 md:bottom-0 md:w-full md:max-w-md md:rounded-none md:border-t-0 md:border-l',
-            )}
-          >
-            {/* Mobile drag handle */}
-            <div className="flex justify-center pt-3 pb-1 shrink-0 md:hidden">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
-            <DrawerForm
-              editingDay={drawer.editingDay}
-              weekStart={weekStart}
-              meal={drawer.meal}
-              recipeUrl={drawer.recipeUrl}
-              editNotes={drawer.notes}
-              setEditNotes={drawer.setNotes}
-              editConstraintIds={drawer.constraintIds}
-              setEditConstraintIds={drawer.setConstraintIds}
-              constraints={constraints}
-              saving={drawer.saving}
-              onSave={drawer.handleSave}
-              onClose={drawer.close}
-              recipes={drawer.recipes}
-              recipesLoading={drawer.recipesLoading}
-              selectedRecipeId={drawer.selectedRecipeId}
-              setSelectedRecipeId={drawer.selectRecipe}
-              onRecipeCreated={drawer.handleRecipeCreated}
+      {/* Day editor — rendered in body portal to avoid mobile fixed-position bugs */}
+      {drawer.editingDay !== null &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm"
+              onClick={drawer.close}
             />
-          </div>
-        </>
-      )}
+            <div
+              className={cn(
+                'fixed z-[70] bg-card border-border flex flex-col shadow-2xl',
+                // Mobile: bottom sheet
+                'inset-x-0 bottom-0 max-h-[88dvh] overflow-hidden rounded-t-2xl border-t safe-area-bottom',
+                // Desktop: right panel
+                'md:inset-x-auto md:right-0 md:top-0 md:bottom-0 md:w-full md:max-w-md md:max-h-none md:rounded-none md:border-t-0 md:border-l',
+              )}
+            >
+              {/* Mobile drag handle */}
+              <div className="flex justify-center pt-3 pb-1 shrink-0 md:hidden">
+                <div className="w-10 h-1 rounded-full bg-border" />
+              </div>
+              <DrawerForm
+                editingDay={drawer.editingDay}
+                weekStart={weekStart}
+                meal={drawer.meal}
+                recipeUrl={drawer.recipeUrl}
+                editNotes={drawer.notes}
+                setEditNotes={drawer.setNotes}
+                editConstraintIds={drawer.constraintIds}
+                setEditConstraintIds={drawer.setConstraintIds}
+                constraints={constraints}
+                saving={drawer.saving}
+                onSave={drawer.handleSave}
+                onClose={drawer.close}
+                recipes={drawer.recipes}
+                recipesLoading={drawer.recipesLoading}
+                selectedRecipeId={drawer.selectedRecipeId}
+                setSelectedRecipeId={drawer.selectRecipe}
+                onRecipeCreated={drawer.handleRecipeCreated}
+              />
+            </div>
+          </>,
+          document.body,
+        )}
     </AppLayout>
   )
 }
