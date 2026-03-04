@@ -199,7 +199,7 @@ export function useDrawerState(options: UseDrawerStateOptions) {
   // openEdit — populate form state from meal plan data and load recipes
   // ------------------------------------------------------------------
   const openEdit = useCallback(
-    (dayOfWeek: number) => {
+    (dayOfWeek: number): boolean => {
       const requestId = ++recipeLoadRequestRef.current
       if (!mealPlan || mealPlan.plan.weekStart !== weekStart) {
         // Data not ready yet — just mark the day; the pending-edit effect will
@@ -212,7 +212,7 @@ export function useDrawerState(options: UseDrawerStateOptions) {
           recipeUrl: '',
           constraintIds: [],
         })
-        return
+        return false
       }
 
       const day = mealPlan.days.find((d) => d.dayOfWeek === dayOfWeek)
@@ -250,6 +250,7 @@ export function useDrawerState(options: UseDrawerStateOptions) {
             dispatch({ type: 'RECIPES_DONE' })
           }
         })
+      return true
     },
     [mealPlan, weekStart, dayTemplates, fetchRecipesCached],
   )
@@ -258,14 +259,11 @@ export function useDrawerState(options: UseDrawerStateOptions) {
   // Pending edit resolution — month-view click navigates first, then opens
   // ------------------------------------------------------------------
   useEffect(() => {
-    if (
-      state.pendingEdit !== null &&
-      state.pendingEdit.weekStart === weekStart &&
-      mealPlan &&
-      mealPlan.plan.weekStart === weekStart
-    ) {
-      openEdit(state.pendingEdit.dayOfWeek)
-      dispatch({ type: 'CLEAR_PENDING' })
+    if (state.pendingEdit !== null && state.pendingEdit.weekStart === weekStart) {
+      const hydrated = openEdit(state.pendingEdit.dayOfWeek)
+      if (hydrated) {
+        dispatch({ type: 'CLEAR_PENDING' })
+      }
     }
   }, [mealPlan, state.pendingEdit, weekStart, openEdit])
 
