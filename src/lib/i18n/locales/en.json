@@ -256,7 +256,11 @@
     "quickAddDesc": "Pull a few starter recipes into your bank and start planning faster.",
     "quickAddAction": "Quick add",
     "quickAddAlreadyAdded": "Added",
-    "quickAddCompactTitle": "Quick add"
+    "quickAddCompactTitle": "Quick add",
+    "kronanTitle": "Recipes from Krónan",
+    "kronanDesc": "Personalized recipes from your connected Krónan account.",
+    "kronanCompactTitle": "Recipes from Krónan",
+    "kronanAttribution": "Powered by Krónan"
   },
   "settings": {
     "title": "Settings",
@@ -288,7 +292,39 @@
     "english": "English",
     "constraintFrequency": "Frequency",
     "constraintFrequencyNone": "No limit",
-    "perWeek": "/week"
+    "perWeek": "/week",
+    "kronan": {
+      "tab": "Krónan",
+      "title": "Krónan account",
+      "description": "Connect your Krónan account to import recipes and send your meal plan straight to a shopping list or cart.",
+      "tokenLabel": "Access token",
+      "tokenPlaceholder": "Paste your Krónan access token",
+      "tokenHint": "We pass this on every request to Krónan. Disconnect any time.",
+      "connect": "Connect",
+      "connected": "Connected to Krónan",
+      "disconnect": "Disconnect"
+    }
+  },
+  "kronan": {
+    "cart": {
+      "cta": "Send to Krónan",
+      "title": "Send this week to Krónan",
+      "description": "Pick which ingredients to send. Pantry staples are unchecked by default — tick them if you need to restock.",
+      "loading": "Looking up ingredients...",
+      "empty": "No meals planned this week — add some first.",
+      "essentialsHeading": "To buy",
+      "staplesHeading": "Likely already in your pantry",
+      "staplesHint": "Unchecked by default. Tick anything you actually need to restock.",
+      "textOnly": "added as text — no Krónan product matched",
+      "addToList": "Add to shopping list",
+      "addToCheckout": "Add to cart",
+      "nothingSelected": "Pick at least one item first.",
+      "addedToList": "{{count}} item added to your Krónan shopping list",
+      "addedToList_plural": "{{count}} items added to your Krónan shopping list",
+      "addedToCart": "{{count}} item added to your Krónan cart",
+      "addedToCart_plural": "{{count}} items added to your Krónan cart",
+      "addedToCartPartial": "{{added}} added · {{skipped}} skipped (no Krónan product match)"
+    }
   },
   "months": {
     "january": "January",

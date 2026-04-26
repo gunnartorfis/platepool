@@ -17,6 +17,8 @@ import {
   updateHomeName,
 } from '@/lib/server/homes'
 import { generateMealPlan } from '@/lib/server/ai'
+import { getKronanStatus } from '@/lib/server/kronan'
+import { KronanCartDialog } from '@/components/planner/kronan-cart-dialog'
 import {
   getHomeSetupCompleted,
   markHomeSetupCompleted,
@@ -106,6 +108,10 @@ function HomePage() {
   const [aiHealthMode, setAiHealthMode] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
 
+  // -- Krónan state --
+  const [kronanConnected, setKronanConnected] = useState(false)
+  const [kronanCartOpen, setKronanCartOpen] = useState(false)
+
   // -- UI state --
   const [tab, setTab] = useState<'planner' | 'members'>('planner')
   const [copied, setCopied] = useState(false)
@@ -125,7 +131,16 @@ function HomePage() {
         markHomeSetupCompleted()
       }
     }
+    async function loadKronan() {
+      try {
+        const status = (await getKronanStatus()) as { connected: boolean }
+        if (!cancelled) setKronanConnected(status.connected)
+      } catch {
+        // ignore
+      }
+    }
     checkSetup()
+    loadKronan()
     return () => {
       cancelled = true
     }
@@ -513,6 +528,9 @@ function HomePage() {
                           },
                         })
                         await load()
+                        if (kronanConnected) {
+                          setKronanCartOpen(true)
+                        }
                       } catch (err) {
                         setAiError(
                           err instanceof Error
@@ -624,6 +642,18 @@ function HomePage() {
                 ? t('planner.generating')
                 : t('planner.generateWithAi')}
             </Button>
+            {kronanConnected && (
+              <Button
+                variant="outline"
+                onClick={() => setKronanCartOpen(true)}
+                disabled={aiLoading}
+                className="gap-2 shrink-0"
+                title={t('kronan.cart.cta')}
+              >
+                <span className="text-rose-600 font-semibold">K</span>
+                {t('kronan.cart.cta')}
+              </Button>
+            )}
             <div className="flex items-center gap-1 shrink-0">
               {view === 'month' ? (
                 <>
@@ -772,6 +802,12 @@ function HomePage() {
           </>,
           document.body,
         )}
+
+      <KronanCartDialog
+        open={kronanCartOpen}
+        onClose={() => setKronanCartOpen(false)}
+        weekStart={weekStart}
+      />
     </AppLayout>
   )
 }

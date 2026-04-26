@@ -160,6 +160,20 @@ export const dayPlans = sqliteTable('day_plans', {
   constraintIds: text('constraint_ids').notNull().default('[]'),
 })
 
+export const kronanCredentials = sqliteTable('kronan_credentials', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  accessToken: text('access_token').notNull(),
+  identityName: text('identity_name'),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+})
+
 // Types
 export type User = typeof users.$inferSelect
 export type Session = typeof sessions.$inferSelect
@@ -174,3 +188,4 @@ export type FamilyMealPlan = typeof familyMealPlans.$inferSelect
 export type FamilyDayPlan = typeof familyDayPlans.$inferSelect
 export type FamilyShare = typeof familyShares.$inferSelect
 export type FamilySubscription = typeof familySubscriptions.$inferSelect
+export type KronanCredential = typeof kronanCredentials.$inferSelect

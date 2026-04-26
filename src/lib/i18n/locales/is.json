@@ -256,7 +256,11 @@
     "quickAddDesc": "Dragðu inn nokkrar byrjendauppskriftir og byrjaðu hraðar að skipuleggja.",
     "quickAddAction": "Bæta hratt við",
     "quickAddAlreadyAdded": "Komið í safn",
-    "quickAddCompactTitle": "Flýtiviðbót"
+    "quickAddCompactTitle": "Flýtiviðbót",
+    "kronanTitle": "Uppskriftir frá Krónunni",
+    "kronanDesc": "Persónulegar uppskriftir sóttar frá Krónan-aðganginum þínum.",
+    "kronanCompactTitle": "Uppskriftir frá Krónunni",
+    "kronanAttribution": "Frá Krónunni"
   },
   "settings": {
     "title": "Stillingar",
@@ -288,7 +292,39 @@
     "english": "English",
     "constraintFrequency": "Tíðni",
     "constraintFrequencyNone": "Engin takmörk",
-    "perWeek": "/viku"
+    "perWeek": "/viku",
+    "kronan": {
+      "tab": "Krónan",
+      "title": "Krónan-aðgangur",
+      "description": "Tengdu Krónan-aðganginn til að flytja inn uppskriftir og senda matseðilinn beint í innkaupalista eða körfu.",
+      "tokenLabel": "Aðgangslykill",
+      "tokenPlaceholder": "Límdu Krónan-aðgangslykilinn þinn",
+      "tokenHint": "Við sendum hann með hverri fyrirspurn til Krónunnar. Hægt er að aftengjast hvenær sem er.",
+      "connect": "Tengjast",
+      "connected": "Tengt við Krónuna",
+      "disconnect": "Aftengjast"
+    }
+  },
+  "kronan": {
+    "cart": {
+      "cta": "Senda á Krónuna",
+      "title": "Senda vikuna á Krónuna",
+      "description": "Veldu hvaða hráefni á að senda. Algeng skápavara er hakuð úr — hakaðu við ef þig vantar að birgja þig upp.",
+      "loading": "Sæki hráefnalista...",
+      "empty": "Engar máltíðir í vikunni — bættu við fyrst.",
+      "essentialsHeading": "Til að kaupa",
+      "staplesHeading": "Líklega þegar í eldhúsinu",
+      "staplesHint": "Hakað úr sjálfkrafa. Hakaðu við það sem þú þarft að birgja þig upp af.",
+      "textOnly": "bætt við sem texta — engin Krónan-vara fannst",
+      "addToList": "Setja á innkaupalista",
+      "addToCheckout": "Setja í körfu",
+      "nothingSelected": "Veldu að minnsta kosti einn hlut.",
+      "addedToList": "{{count}} hlutur færður á innkaupalistann hjá Krónunni",
+      "addedToList_plural": "{{count}} hlutir færðir á innkaupalistann hjá Krónunni",
+      "addedToCart": "{{count}} hlutur kominn í Krónan-körfuna",
+      "addedToCart_plural": "{{count}} hlutir komnir í Krónan-körfuna",
+      "addedToCartPartial": "{{added}} bætt við · {{skipped}} sleppt (engin Krónan-vara fannst)"
+    }
   },
   "months": {
     "january": "Janúar",
