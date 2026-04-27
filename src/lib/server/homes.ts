@@ -98,10 +98,11 @@ export const getMyHome = createServerFn({ method: 'GET' }).handler(async () => {
 
     if (!newMembership[0]) return null
 
-    const [home] = await db
+    const homeRows = await db
       .select()
       .from(families)
       .where(eq(families.id, newMembership[0].familyId))
+    const home = homeRows.at(0)
 
     if (!home) return null
 
@@ -112,10 +113,11 @@ export const getMyHome = createServerFn({ method: 'GET' }).handler(async () => {
     }
   }
 
-  const [home] = await db
+  const homeRows = await db
     .select()
     .from(families)
     .where(eq(families.id, membership[0].familyId))
+  const home = homeRows.at(0)
 
   if (!home) return null
 

@@ -127,7 +127,32 @@
     "noRecipesSaved": "No saved recipes yet",
     "selectedRecipe": "Selected recipe",
     "clearSelection": "Clear",
-    "saveAndAssign": "Save recipe & assign"
+    "saveAndAssign": "Save recipe & assign",
+    "dateRange": "Date range",
+    "dateRangeTo": "to",
+    "budget": "Budget",
+    "budgetTight": "Budget",
+    "budgetBalanced": "Balanced",
+    "budgetGenerous": "Generous",
+    "healthMode": "Health / Átak mode",
+    "healthModeDesc": "Focused cooking sprint",
+    "constraintsAndLimits": "Constraints & limitations",
+    "dayConstraints": "Day constraints"
+  },
+  "register": {
+    "setupHome": "Set up your home",
+    "createHome": "Create your home",
+    "createHomeDesc": "Start a new home and invite others to join.",
+    "homeName": "Home name",
+    "homeNamePlaceholder": "e.g. The Smiths",
+    "creating": "Creating…",
+    "joinHome": "Join a home",
+    "joinHomeDesc": "Enter an invite code to join an existing home.",
+    "inviteCode": "Invite code",
+    "joining": "Joining…",
+    "or": "or",
+    "createFailed": "Failed to create home",
+    "joinFailed": "Failed to join home"
   },
   "groups": {
     "title": "Groups",

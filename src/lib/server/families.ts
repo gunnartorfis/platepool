@@ -117,10 +117,11 @@ export const getFamily = createServerFn({ method: 'GET' })
       .limit(1)
     if (!membership[0]) throw new Error('Not a member')
 
-    const [family] = await db
+    const familyRows = await db
       .select()
       .from(families)
       .where(eq(families.id, data.familyId))
+    const family = familyRows.at(0)
     if (!family) throw new Error('Family not found')
 
     const members = await db

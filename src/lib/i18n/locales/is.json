@@ -127,7 +127,32 @@
     "noRecipesSaved": "Engar vistaðar uppskriftir",
     "selectedRecipe": "Valin uppskrift",
     "clearSelection": "Hreinsa",
-    "saveAndAssign": "Vista uppskrift og velja"
+    "saveAndAssign": "Vista uppskrift og velja",
+    "dateRange": "Tímabil",
+    "dateRangeTo": "til",
+    "budget": "Kostnaður",
+    "budgetTight": "Sparlegt",
+    "budgetBalanced": "Í jafnvægi",
+    "budgetGenerous": "Ríflegt",
+    "healthMode": "Átak",
+    "healthModeDesc": "Markviss matartörn",
+    "constraintsAndLimits": "Takmarkanir",
+    "dayConstraints": "Daglegar stillingar"
+  },
+  "register": {
+    "setupHome": "Settu upp heimilið þitt",
+    "createHome": "Búðu til heimili",
+    "createHomeDesc": "Stofnaðu nýtt heimili og bjóddu öðrum.",
+    "homeName": "Heiti heimilis",
+    "homeNamePlaceholder": "t.d. Fjölskyldan Smith",
+    "creating": "Bý til…",
+    "joinHome": "Ganga í heimili",
+    "joinHomeDesc": "Sláðu inn boðskóða til að ganga í heimili.",
+    "inviteCode": "Boðskóði",
+    "joining": "Geng í…",
+    "or": "eða",
+    "createFailed": "Mistókst að búa til heimili",
+    "joinFailed": "Mistókst að ganga í heimili"
   },
   "groups": {
     "title": "Hópar",

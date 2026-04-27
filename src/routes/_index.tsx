@@ -387,7 +387,9 @@ function HomePage() {
 
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Date Range</label>
+                    <label className="text-sm font-medium">
+                      {t('planner.dateRange')}
+                    </label>
                     <div className="flex items-center gap-2">
                       <Input
                         type="date"
@@ -395,7 +397,9 @@ function HomePage() {
                         onChange={(e) => setAiStartDate(e.target.value)}
                         className="flex-1"
                       />
-                      <span className="text-sm text-muted-foreground">to</span>
+                      <span className="text-sm text-muted-foreground">
+                        {t('planner.dateRangeTo')}
+                      </span>
                       <Input
                         type="date"
                         value={aiEndDate}
@@ -406,12 +410,14 @@ function HomePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Budget</label>
+                    <label className="text-sm font-medium">
+                      {t('planner.budget')}
+                    </label>
                     <div className="flex rounded-lg border overflow-hidden">
                       {[
-                        { value: 1, label: 'Budget' },
-                        { value: 2, label: 'Balanced' },
-                        { value: 3, label: 'Generous' },
+                        { value: 1, labelKey: 'planner.budgetTight' },
+                        { value: 2, labelKey: 'planner.budgetBalanced' },
+                        { value: 3, labelKey: 'planner.budgetGenerous' },
                       ].map((option) => (
                         <button
                           key={option.value}
@@ -424,7 +430,7 @@ function HomePage() {
                               : 'bg-background hover:bg-muted',
                           )}
                         >
-                          {option.label}
+                          {t(option.labelKey)}
                         </button>
                       ))}
                     </div>
@@ -433,10 +439,10 @@ function HomePage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <label className="text-sm font-medium">
-                        Health / Átak Mode
+                        {t('planner.healthMode')}
                       </label>
                       <p className="text-xs text-muted-foreground">
-                        Focused cooking sprint
+                        {t('planner.healthModeDesc')}
                       </p>
                     </div>
                     <button
@@ -458,7 +464,7 @@ function HomePage() {
                   {constraints.length > 0 && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
-                        Constraints & Limitations
+                        {t('planner.constraintsAndLimits')}
                       </label>
                       <div className="bg-muted/50 rounded-md p-3 text-sm space-y-1">
                         {constraints.map((c) => (
@@ -480,7 +486,7 @@ function HomePage() {
                   {dayTemplates.some((tpl) => tpl.constraintIds.length > 0) && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
-                        Day Constraints
+                        {t('planner.dayConstraints')}
                       </label>
                       <div className="bg-muted/50 rounded-md p-3 text-sm space-y-1">
                         {dayTemplates
@@ -603,11 +609,16 @@ function HomePage() {
                   const dow = (d.getDay() + 6) % 7
 
                   let hasMeal = false
-                  if (wsStr === weekStart && mealPlan) {
+                  if (
+                    wsStr === weekStart &&
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    mealPlan
+                  ) {
                     const day = mealPlan.days.find((dd) => dd.dayOfWeek === dow)
                     hasMeal = !!day?.mealName
                   }
                   const weekDays = monthMealPlans[wsStr]
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   if (weekDays) {
                     const day = weekDays.find((dd) => dd.dayOfWeek === dow)
                     if (day) hasMeal = !!day.mealName

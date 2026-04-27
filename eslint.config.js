@@ -12,6 +12,7 @@ export default [
       '.nitro/**',
       'skills/**',
       'dist/**',
+      'scripts/**',
       'src/routeTree.gen.ts',
     ],
   },

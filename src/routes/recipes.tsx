@@ -36,6 +36,7 @@ import {
 
 export const Route = createFileRoute('/recipes')({ component: RecipesPage })
 
+// eslint-disable-next-line no-hardcoded-english/no-hardcoded-english
 const URL_PREFIX = 'http'
 
 type CuratedQuickAdd = {
@@ -728,7 +729,7 @@ function RecipePreviewCard({
         {recipe?.recipeIngredient && recipe.recipeIngredient.length > 0 && (
           <div className="mt-3 pt-3 border-t border-amber-200">
             <p className="text-xs font-medium text-amber-800 mb-1.5">
-              {t('recipes.ingredients')} ({recipe.recipeIngredient.length})
+              {`${t('recipes.ingredients')} (${recipe.recipeIngredient.length})`}
             </p>
             <div className="flex flex-wrap gap-1">
               {recipe.recipeIngredient.slice(0, 6).map((ing, i) => (

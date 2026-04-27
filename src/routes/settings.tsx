@@ -262,7 +262,7 @@ function SettingsPage() {
             <div className="space-y-3">
               <Label htmlFor="language">{t('settings.selectLanguage')}</Label>
               <Select
-                value={i18n.language ?? 'is'}
+                value={i18n.language || 'is'}
                 onValueChange={(value) => value && i18n.changeLanguage(value)}
               >
                 <SelectTrigger id="language" className="w-48">

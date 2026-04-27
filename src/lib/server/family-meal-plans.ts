@@ -334,10 +334,11 @@ export const getSharedFamilyMealPlans = createServerFn({ method: 'GET' })
 
     const sharedPlans = []
     for (const share of shares) {
-      const [sharedFamily] = await db
+      const sharedFamilyRows = await db
         .select()
         .from(families)
         .where(eq(families.id, share.sharedWithFamilyId))
+      const sharedFamily = sharedFamilyRows.at(0)
 
       if (sharedFamily) {
         const sharedPlan = await db
@@ -424,10 +425,11 @@ export const getSubscribedFamilyMealPlan = createServerFn({ method: 'GET' })
       .from(familyDayPlans)
       .where(eq(familyDayPlans.familyMealPlanId, plan[0].id))
 
-    const [family] = await db
+    const familyRows = await db
       .select()
       .from(families)
       .where(eq(families.id, data.familyId))
+    const family = familyRows.at(0)
 
     return {
       plan: { ...plan[0] },
