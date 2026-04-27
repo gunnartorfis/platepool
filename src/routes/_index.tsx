@@ -647,10 +647,9 @@ function HomePage() {
                 variant="outline"
                 onClick={() => setKronanCartOpen(true)}
                 disabled={aiLoading}
-                className="gap-2 shrink-0"
+                className="gap-2 shrink-0 border-rose-300 text-rose-700 hover:bg-rose-50"
                 title={t('kronan.cart.cta')}
               >
-                <span className="text-rose-600 font-semibold">K</span>
                 {t('kronan.cart.cta')}
               </Button>
             )}
