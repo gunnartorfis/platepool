@@ -1,5 +1,4 @@
 import { MobileNav, Sidebar } from './sidebar'
-import type { User } from '@/lib/db/schema'
 import { Route as RootRoute } from '@/routes/__root'
 
 export function AppLayout({ children }: { children: React.ReactNode }) {

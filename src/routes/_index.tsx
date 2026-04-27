@@ -53,11 +53,10 @@ import { DAY_NAMES } from '@/components/planner/types'
 import { useDrawerState } from '@/hooks/use-drawer-state'
 
 export const Route = createFileRoute('/_index')({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { week?: string } => {
     const weekParam = search.week as string | undefined
-    return {
-      week: weekParam ? weekStartFromParam(weekParam) : currentWeekStart(),
-    }
+    if (!weekParam) return {}
+    return { week: weekStartFromParam(weekParam) }
   },
   component: HomePage,
 })
@@ -67,7 +66,8 @@ export const Route = createFileRoute('/_index')({
 function HomePage() {
   const { t } = useTranslation()
   const router = useRouter()
-  const { week: weekStart } = Route.useSearch()
+  const { week: weekParam } = Route.useSearch()
+  const weekStart = weekParam ?? currentWeekStart()
 
   // -- View state --
   const [view, setViewState] = useState<'week' | 'month'>('month')

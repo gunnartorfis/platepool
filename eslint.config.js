@@ -4,14 +4,24 @@ import { tanstackConfig } from '@tanstack/eslint-config'
 import { AST_NODE_TYPES } from '@typescript-eslint/utils'
 
 export default [
+  {
+    ignores: [
+      '.agents/**',
+      '.output/**',
+      '.tanstack/**',
+      '.nitro/**',
+      'skills/**',
+      'dist/**',
+      'src/routeTree.gen.ts',
+    ],
+  },
   ...tanstackConfig,
   {
     files: [
       'src/routes/**/*.{ts,tsx}',
       'src/components/layout/**/*.{ts,tsx}',
-      '!**/lib/i18n/**',
-      '!**/eslint/**',
     ],
+    ignores: ['**/lib/i18n/**', '**/eslint/**'],
     plugins: {
       'no-hardcoded-english': {
         rules: {
