@@ -51,7 +51,7 @@ function computeMonthCells(
     const dayOfWeek = (currentDate.getDay() + 6) % 7
 
     const weekDays = monthMealPlans[weekStartStr]
-    const dayData = weekDays?.find((d) => d.dayOfWeek === dayOfWeek)
+    const dayData = weekDays.find((d) => d.dayOfWeek === dayOfWeek)
 
     const isGenerating =
       genStart !== null &&

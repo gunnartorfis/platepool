@@ -26,11 +26,12 @@ export const login = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const db = await getDbWithSchema()
-    const [user] = await db
+    const rows = await db
       .select()
       .from(users)
       .where(eq(users.email, data.email))
       .limit(1)
+    const user = rows.at(0)
     if (!user) throw new Error('Invalid email or password')
 
     const valid = await verifyPassword(data.password, user.passwordHash)
@@ -116,11 +117,12 @@ export const changePassword = createServerFn({ method: 'POST' })
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
 
-    const [dbUser] = await db
+    const dbUserRows = await db
       .select()
       .from(users)
       .where(eq(users.id, user.id))
       .limit(1)
+    const dbUser = dbUserRows.at(0)
     if (!dbUser) throw new Error('User not found')
 
     const valid = await verifyPassword(
@@ -142,13 +144,13 @@ export const getHomeSetupCompleted = createServerFn({ method: 'GET' }).handler(
     const user = await getUser()
     if (!user) return false
 
-    const [dbUser] = await db
+    const rows = await db
       .select({ homeSetupCompleted: users.homeSetupCompleted })
       .from(users)
       .where(eq(users.id, user.id))
       .limit(1)
 
-    return dbUser?.homeSetupCompleted ?? false
+    return rows.at(0)?.homeSetupCompleted ?? false
   },
 )
 
