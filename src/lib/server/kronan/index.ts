@@ -15,6 +15,7 @@ import { getUser } from '../../auth/get-user'
 import {
   KronanApiError,
   KronanNotConnectedError,
+  ensureKronanCredentialsTable,
   fetchKronanIdentity,
   kronanFetch,
   requireKronanToken,
@@ -50,6 +51,7 @@ export const getKronanStatus = createServerFn({ method: 'GET' }).handler(
   async () => {
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
+    await ensureKronanCredentialsTable()
     const db = await getDbWithSchema()
     const rows = await db
       .select({
@@ -86,6 +88,7 @@ export const connectKronan = createServerFn({ method: 'POST' })
     }
 
     const db = await getDbWithSchema()
+    await ensureKronanCredentialsTable()
     const existing = await db
       .select({ userId: kronanCredentials.userId })
       .from(kronanCredentials)
@@ -116,6 +119,7 @@ export const disconnectKronan = createServerFn({ method: 'POST' }).handler(
   async () => {
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
+    await ensureKronanCredentialsTable()
     const db = await getDbWithSchema()
     await db
       .delete(kronanCredentials)
