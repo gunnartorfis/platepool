@@ -50,8 +50,10 @@ function computeMonthCells(
     const weekStartStr = ws.toISOString().slice(0, 10)
     const dayOfWeek = (currentDate.getDay() + 6) % 7
 
-    const weekDays = monthMealPlans[weekStartStr]
-    const dayData = weekDays.find((d) => d.dayOfWeek === dayOfWeek)
+    const weekDays = monthMealPlans[weekStartStr] as
+      | Array<(typeof monthMealPlans)[string][number]>
+      | undefined
+    const dayData = weekDays?.find((d) => d.dayOfWeek === dayOfWeek)
 
     const isGenerating =
       genStart !== null &&
