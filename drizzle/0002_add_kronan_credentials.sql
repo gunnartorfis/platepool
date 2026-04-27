@@ -1,4 +1,4 @@
-CREATE TABLE `kronan_credentials` (
+CREATE TABLE IF NOT EXISTS `kronan_credentials` (
 	`user_id` text PRIMARY KEY NOT NULL,
 	`access_token` text NOT NULL,
 	`identity_name` text,
