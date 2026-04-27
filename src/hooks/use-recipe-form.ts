@@ -113,7 +113,7 @@ export function useRecipeForm(options?: UseRecipeFormOptions) {
     await generateTagsForTitle()
   }
 
-  async function handleUrlChange(value: string) {
+  function handleUrlChange(value: string) {
     setUrl(value)
     setFetchError(null)
 
@@ -139,10 +139,10 @@ export function useRecipeForm(options?: UseRecipeFormOptions) {
           data: { url: value },
         })) as RecipeMetadata
 
-        if (result && ERROR_KEY in result) {
+        if (ERROR_KEY in result) {
           setFetchError(t('recipes.fetchError'))
           setMetadata(null)
-        } else if (result && (result.title || result.recipe)) {
+        } else if (result.title || result.recipe) {
           setMetadata(result)
           if (!title && result.title) {
             setTitle(result.title)
@@ -197,7 +197,7 @@ export function useRecipeForm(options?: UseRecipeFormOptions) {
                 },
               })) as { tags?: Array<string>; error?: string }
 
-              if (aiResult && aiResult.tags && aiResult.tags.length > 0) {
+              if (aiResult.tags && aiResult.tags.length > 0) {
                 setSelectedTags(aiResult.tags)
               } else {
                 setSelectedTags([])

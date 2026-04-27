@@ -149,7 +149,7 @@ export function Sidebar({ user }: { user: User }) {
                         'bg-sidebar-accent text-sidebar-accent-foreground',
                     )}
                   >
-                    English
+                    {t('settings.english')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => changeLanguage('is')}

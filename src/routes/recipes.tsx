@@ -9,6 +9,11 @@ import {
   getMyRecipes,
   quickAddCuratedRecipe,
 } from '@/lib/server/recipes'
+import {
+  getKronanRecipeQuickAdds,
+  getKronanStatus,
+  importKronanRecipe,
+} from '@/lib/server/kronan'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,6 +36,7 @@ import {
 
 export const Route = createFileRoute('/recipes')({ component: RecipesPage })
 
+// eslint-disable-next-line no-hardcoded-english/no-hardcoded-english
 const URL_PREFIX = 'http'
 
 type CuratedQuickAdd = {
@@ -41,14 +47,27 @@ type CuratedQuickAdd = {
   stars: number
 }
 
+type KronanQuickAdd = {
+  slug: string
+  title: string
+  description: string | null
+  image: string | null
+  tags: Array<string>
+}
+
 function RecipesPage() {
   const { t } = useTranslation()
   const [recipes, setRecipes] = useState<Array<RecipeData>>([])
   const [curatedQuickAdds, setCuratedQuickAdds] = useState<
     Array<CuratedQuickAdd>
   >([])
+  const [kronanQuickAdds, setKronanQuickAdds] = useState<Array<KronanQuickAdd>>(
+    [],
+  )
+  const [kronanConnected, setKronanConnected] = useState(false)
   const [loading, setLoading] = useState(true)
   const [addingQuickAddId, setAddingQuickAddId] = useState<string | null>(null)
+  const [addingKronanSlug, setAddingKronanSlug] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<RecipeData | null>(null)
 
@@ -62,14 +81,38 @@ function RecipesPage() {
   async function load() {
     setLoading(true)
     try {
-      const [myRecipes, quickAdds] = await Promise.all([
+      const [myRecipes, quickAdds, kronanStatus] = await Promise.all([
         getMyRecipes(),
         getCuratedQuickAdds(),
+        getKronanStatus().catch(() => ({ connected: false }) as const),
       ])
       setRecipes(myRecipes as Array<RecipeData>)
       setCuratedQuickAdds(quickAdds as Array<CuratedQuickAdd>)
+
+      const isConnected = (kronanStatus as { connected: boolean }).connected
+      setKronanConnected(isConnected)
+      if (isConnected) {
+        try {
+          const kronanRecipes = await getKronanRecipeQuickAdds()
+          setKronanQuickAdds(kronanRecipes as Array<KronanQuickAdd>)
+        } catch {
+          setKronanQuickAdds([])
+        }
+      } else {
+        setKronanQuickAdds([])
+      }
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleKronanQuickAdd(slug: string) {
+    setAddingKronanSlug(slug)
+    try {
+      await importKronanRecipe({ data: { slug } })
+      await load()
+    } finally {
+      setAddingKronanSlug(null)
     }
   }
 
@@ -165,6 +208,14 @@ function RecipesPage() {
               onQuickAdd={handleQuickAdd}
               mode="full"
             />
+            {kronanConnected && (
+              <KronanQuickAddPanel
+                recipes={kronanQuickAdds}
+                addingSlug={addingKronanSlug}
+                onAdd={handleKronanQuickAdd}
+                mode="full"
+              />
+            )}
           </div>
         ) : (
           <div className="space-y-6">
@@ -174,6 +225,14 @@ function RecipesPage() {
               onQuickAdd={handleQuickAdd}
               mode="compact"
             />
+            {kronanConnected && (
+              <KronanQuickAddPanel
+                recipes={kronanQuickAdds}
+                addingSlug={addingKronanSlug}
+                onAdd={handleKronanQuickAdd}
+                mode="compact"
+              />
+            )}
             <RecipeSection
               recipes={recipes}
               onEdit={openEdit}
@@ -433,6 +492,119 @@ function QuickAddChip({
   )
 }
 
+function KronanQuickAddPanel({
+  recipes,
+  addingSlug,
+  onAdd,
+  mode,
+}: {
+  recipes: Array<KronanQuickAdd>
+  addingSlug: string | null
+  onAdd: (slug: string) => void
+  mode: 'full' | 'compact'
+}) {
+  const { t } = useTranslation()
+  if (recipes.length === 0) return null
+
+  if (mode === 'compact') {
+    return (
+      <div className="rounded-xl border border-rose-200/70 bg-rose-50/40 px-3 py-2.5">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-semibold text-rose-600 tracking-wide">
+            {t('recipes.kronanCompactTitle')}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {recipes.slice(0, 12).map((recipe) => (
+            <button
+              key={recipe.slug}
+              type="button"
+              disabled={addingSlug === recipe.slug}
+              onClick={() => onAdd(recipe.slug)}
+              className={cn(
+                'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors',
+                'border-rose-200 bg-background text-foreground hover:border-rose-400 hover:bg-rose-50',
+              )}
+            >
+              <PlusIcon className="w-3 h-3" />
+              <span>{recipe.title}</span>
+              {addingSlug === recipe.slug && (
+                <span className="text-muted-foreground">
+                  {t('common.saving')}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-2xl border border-rose-200 bg-gradient-to-br from-rose-50 via-amber-50/40 to-background p-5">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-base font-display font-semibold flex items-center gap-2">
+            <span className="text-rose-600">{t('recipes.kronanTitle')}</span>
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {t('recipes.kronanDesc')}
+          </p>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {recipes.slice(0, 6).map((recipe) => (
+          <div
+            key={recipe.slug}
+            className="rounded-xl border border-rose-100 bg-background p-3 flex items-start gap-3"
+          >
+            {recipe.image && (
+              <img
+                src={recipe.image}
+                alt=""
+                className="w-12 h-12 rounded-lg object-cover shrink-0"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">{recipe.title}</p>
+              {recipe.description && (
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                  {recipe.description}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-1 mt-2">
+                {recipe.tags.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="default"
+              disabled={addingSlug === recipe.slug}
+              onClick={() => onAdd(recipe.slug)}
+              className="shrink-0"
+            >
+              <PlusIcon className="w-3.5 h-3.5 mr-1" />
+              {addingSlug === recipe.slug
+                ? t('common.saving')
+                : t('recipes.quickAddAction')}
+            </Button>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-[10px] uppercase tracking-wider text-rose-700/70 font-medium">
+        {t('recipes.kronanAttribution')}
+      </p>
+    </div>
+  )
+}
+
 function QuickAddRecipeRow({
   recipe,
   adding,
@@ -557,7 +729,7 @@ function RecipePreviewCard({
         {recipe?.recipeIngredient && recipe.recipeIngredient.length > 0 && (
           <div className="mt-3 pt-3 border-t border-amber-200">
             <p className="text-xs font-medium text-amber-800 mb-1.5">
-              {t('recipes.ingredients')} ({recipe.recipeIngredient.length})
+              {`${t('recipes.ingredients')} (${recipe.recipeIngredient.length})`}
             </p>
             <div className="flex flex-wrap gap-1">
               {recipe.recipeIngredient.slice(0, 6).map((ing, i) => (

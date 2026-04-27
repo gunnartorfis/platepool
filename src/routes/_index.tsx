@@ -17,6 +17,8 @@ import {
   updateHomeName,
 } from '@/lib/server/homes'
 import { generateMealPlan } from '@/lib/server/ai'
+import { getKronanStatus } from '@/lib/server/kronan'
+import { KronanCartDialog } from '@/components/planner/kronan-cart-dialog'
 import {
   getHomeSetupCompleted,
   markHomeSetupCompleted,
@@ -51,11 +53,10 @@ import { DAY_NAMES } from '@/components/planner/types'
 import { useDrawerState } from '@/hooks/use-drawer-state'
 
 export const Route = createFileRoute('/_index')({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { week?: string } => {
     const weekParam = search.week as string | undefined
-    return {
-      week: weekParam ? weekStartFromParam(weekParam) : currentWeekStart(),
-    }
+    if (!weekParam) return {}
+    return { week: weekStartFromParam(weekParam) }
   },
   component: HomePage,
 })
@@ -65,7 +66,8 @@ export const Route = createFileRoute('/_index')({
 function HomePage() {
   const { t } = useTranslation()
   const router = useRouter()
-  const { week: weekStart } = Route.useSearch()
+  const { week: weekParam } = Route.useSearch()
+  const weekStart = weekParam ?? currentWeekStart()
 
   // -- View state --
   const [view, setViewState] = useState<'week' | 'month'>('month')
@@ -106,6 +108,10 @@ function HomePage() {
   const [aiHealthMode, setAiHealthMode] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
 
+  // -- Krónan state --
+  const [kronanConnected, setKronanConnected] = useState(false)
+  const [kronanCartOpen, setKronanCartOpen] = useState(false)
+
   // -- UI state --
   const [tab, setTab] = useState<'planner' | 'members'>('planner')
   const [copied, setCopied] = useState(false)
@@ -125,7 +131,16 @@ function HomePage() {
         markHomeSetupCompleted()
       }
     }
+    async function loadKronan() {
+      try {
+        const status = (await getKronanStatus()) as { connected: boolean }
+        if (!cancelled) setKronanConnected(status.connected)
+      } catch {
+        // ignore
+      }
+    }
     checkSetup()
+    loadKronan()
     return () => {
       cancelled = true
     }
@@ -372,7 +387,9 @@ function HomePage() {
 
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Date Range</label>
+                    <label className="text-sm font-medium">
+                      {t('planner.dateRange')}
+                    </label>
                     <div className="flex items-center gap-2">
                       <Input
                         type="date"
@@ -380,7 +397,9 @@ function HomePage() {
                         onChange={(e) => setAiStartDate(e.target.value)}
                         className="flex-1"
                       />
-                      <span className="text-sm text-muted-foreground">to</span>
+                      <span className="text-sm text-muted-foreground">
+                        {t('planner.dateRangeTo')}
+                      </span>
                       <Input
                         type="date"
                         value={aiEndDate}
@@ -391,12 +410,14 @@ function HomePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Budget</label>
+                    <label className="text-sm font-medium">
+                      {t('planner.budget')}
+                    </label>
                     <div className="flex rounded-lg border overflow-hidden">
                       {[
-                        { value: 1, label: 'Budget' },
-                        { value: 2, label: 'Balanced' },
-                        { value: 3, label: 'Generous' },
+                        { value: 1, labelKey: 'planner.budgetTight' },
+                        { value: 2, labelKey: 'planner.budgetBalanced' },
+                        { value: 3, labelKey: 'planner.budgetGenerous' },
                       ].map((option) => (
                         <button
                           key={option.value}
@@ -409,7 +430,7 @@ function HomePage() {
                               : 'bg-background hover:bg-muted',
                           )}
                         >
-                          {option.label}
+                          {t(option.labelKey)}
                         </button>
                       ))}
                     </div>
@@ -418,10 +439,10 @@ function HomePage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <label className="text-sm font-medium">
-                        Health / Átak Mode
+                        {t('planner.healthMode')}
                       </label>
                       <p className="text-xs text-muted-foreground">
-                        Focused cooking sprint
+                        {t('planner.healthModeDesc')}
                       </p>
                     </div>
                     <button
@@ -443,7 +464,7 @@ function HomePage() {
                   {constraints.length > 0 && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
-                        Constraints & Limitations
+                        {t('planner.constraintsAndLimits')}
                       </label>
                       <div className="bg-muted/50 rounded-md p-3 text-sm space-y-1">
                         {constraints.map((c) => (
@@ -465,7 +486,7 @@ function HomePage() {
                   {dayTemplates.some((tpl) => tpl.constraintIds.length > 0) && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
-                        Day Constraints
+                        {t('planner.dayConstraints')}
                       </label>
                       <div className="bg-muted/50 rounded-md p-3 text-sm space-y-1">
                         {dayTemplates
@@ -513,6 +534,9 @@ function HomePage() {
                           },
                         })
                         await load()
+                        if (kronanConnected) {
+                          setKronanCartOpen(true)
+                        }
                       } catch (err) {
                         setAiError(
                           err instanceof Error
@@ -585,11 +609,16 @@ function HomePage() {
                   const dow = (d.getDay() + 6) % 7
 
                   let hasMeal = false
-                  if (wsStr === weekStart && mealPlan) {
+                  if (
+                    wsStr === weekStart &&
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    mealPlan
+                  ) {
                     const day = mealPlan.days.find((dd) => dd.dayOfWeek === dow)
                     hasMeal = !!day?.mealName
                   }
                   const weekDays = monthMealPlans[wsStr]
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   if (weekDays) {
                     const day = weekDays.find((dd) => dd.dayOfWeek === dow)
                     if (day) hasMeal = !!day.mealName
@@ -624,6 +653,17 @@ function HomePage() {
                 ? t('planner.generating')
                 : t('planner.generateWithAi')}
             </Button>
+            {kronanConnected && (
+              <Button
+                variant="outline"
+                onClick={() => setKronanCartOpen(true)}
+                disabled={aiLoading}
+                className="gap-2 shrink-0 border-rose-300 text-rose-700 hover:bg-rose-50"
+                title={t('kronan.cart.cta')}
+              >
+                {t('kronan.cart.cta')}
+              </Button>
+            )}
             <div className="flex items-center gap-1 shrink-0">
               {view === 'month' ? (
                 <>
@@ -772,6 +812,12 @@ function HomePage() {
           </>,
           document.body,
         )}
+
+      <KronanCartDialog
+        open={kronanCartOpen}
+        onClose={() => setKronanCartOpen(false)}
+        weekStart={weekStart}
+      />
     </AppLayout>
   )
 }

@@ -48,7 +48,7 @@ function RegisterPage() {
       await router.invalidate()
       router.navigate({ to: '/' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create home')
+      setError(err instanceof Error ? err.message : t('register.createFailed'))
     } finally {
       setLoading(false)
     }
@@ -64,7 +64,7 @@ function RegisterPage() {
       await router.invalidate()
       router.navigate({ to: '/' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to join home')
+      setError(err instanceof Error ? err.message : t('register.joinFailed'))
     } finally {
       setLoading(false)
     }
@@ -78,24 +78,26 @@ function RegisterPage() {
             <h1 className="text-4xl font-display font-bold text-foreground tracking-tight mb-1">
               {t('home.title')}
             </h1>
-            <p className="text-muted-foreground text-sm">Set up your home</p>
+            <p className="text-muted-foreground text-sm">
+              {t('register.setupHome')}
+            </p>
           </div>
 
           <div className="space-y-4">
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
               <h2 className="text-lg font-display font-semibold mb-2">
-                Create your home
+                {t('register.createHome')}
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Start a new home and invite others to join.
+                {t('register.createHomeDesc')}
               </p>
               <form onSubmit={handleCreateHome} className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="homeName">Home name</Label>
+                  <Label htmlFor="homeName">{t('register.homeName')}</Label>
                   <Input
                     id="homeName"
                     type="text"
-                    placeholder="e.g. The Smiths"
+                    placeholder={t('register.homeNamePlaceholder')}
                     value={homeName}
                     onChange={(e) => setHomeName(e.target.value)}
                     required
@@ -106,7 +108,7 @@ function RegisterPage() {
                   className="w-full"
                   disabled={loading || !homeName.trim()}
                 >
-                  {loading ? 'Creating…' : 'Create home'}
+                  {loading ? t('register.creating') : t('register.createHome')}
                 </Button>
               </form>
             </div>
@@ -117,21 +119,21 @@ function RegisterPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  or
+                  {t('register.or')}
                 </span>
               </div>
             </div>
 
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
               <h2 className="text-lg font-display font-semibold mb-2">
-                Join a home
+                {t('register.joinHome')}
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Enter an invite code to join an existing home.
+                {t('register.joinHomeDesc')}
               </p>
               <form onSubmit={handleJoinHome} className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="inviteCode">Invite code</Label>
+                  <Label htmlFor="inviteCode">{t('register.inviteCode')}</Label>
                   <Input
                     id="inviteCode"
                     type="text"
@@ -150,7 +152,7 @@ function RegisterPage() {
                   className="w-full"
                   disabled={loading || inviteCode.length < 6}
                 >
-                  {loading ? 'Joining…' : 'Join home'}
+                  {loading ? t('register.joining') : t('register.joinHome')}
                 </Button>
               </form>
             </div>

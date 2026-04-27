@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@/components/layout/app-layout'
 import { changePassword, logout, updateProfile } from '@/lib/server/auth'
 import { getMyFamilies } from '@/lib/server/families'
+import {
+  connectKronan,
+  disconnectKronan,
+  getKronanStatus,
+} from '@/lib/server/kronan'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,11 +27,19 @@ type Family = { id: string; name: string; inviteCode: string; role: string }
 function SettingsPage() {
   const router = useRouter()
   const { t, i18n } = useTranslation()
-  const [tab, setTab] = useState<'profile' | 'password' | 'language' | 'homes'>(
-    'language',
-  )
+  const [tab, setTab] = useState<
+    'profile' | 'password' | 'language' | 'homes' | 'kronan'
+  >('language')
 
   const [families, setFamilies] = useState<Array<Family>>([])
+
+  type KronanState =
+    | { connected: false }
+    | { connected: true; identityName?: string | null }
+  const [kronanStatus, setKronanStatus] = useState<KronanState | null>(null)
+  const [kronanToken, setKronanToken] = useState('')
+  const [kronanSaving, setKronanSaving] = useState(false)
+  const [kronanError, setKronanError] = useState('')
 
   const [pName, setPName] = useState('')
   const [pEmail, setPEmail] = useState('')
@@ -83,8 +96,49 @@ function SettingsPage() {
       const fs = await getMyFamilies()
       setFamilies(fs as Array<Family>)
     }
+    async function loadKronan() {
+      try {
+        const status = (await getKronanStatus()) as KronanState
+        setKronanStatus(status)
+      } catch {
+        setKronanStatus({ connected: false })
+      }
+    }
     loadFamilies()
+    loadKronan()
   }, [])
+
+  async function handleConnectKronan(e: React.FormEvent) {
+    e.preventDefault()
+    setKronanError('')
+    setKronanSaving(true)
+    try {
+      const result = (await connectKronan({
+        data: { token: kronanToken },
+      })) as { connected: true; identityName: string | null }
+      setKronanStatus({
+        connected: true,
+        identityName: result.identityName,
+      })
+      setKronanToken('')
+    } catch (err) {
+      setKronanError(
+        err instanceof Error ? err.message : t('common.error'),
+      )
+    } finally {
+      setKronanSaving(false)
+    }
+  }
+
+  async function handleDisconnectKronan() {
+    setKronanSaving(true)
+    try {
+      await disconnectKronan()
+      setKronanStatus({ connected: false })
+    } finally {
+      setKronanSaving(false)
+    }
+  }
 
   return (
     <AppLayout>
@@ -93,22 +147,26 @@ function SettingsPage() {
           {t('settings.title')}
         </h1>
 
-        <div className="flex gap-1 mb-6 border-b border-border">
-          {(['profile', 'password', 'language', 'homes'] as const).map(
-            (key) => (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
-                  tab === key
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {key === 'homes' ? t('settings.homes') : t(`settings.${key}`)}
-              </button>
-            ),
-          )}
+        <div className="flex gap-1 mb-6 border-b border-border overflow-x-auto">
+          {(
+            ['profile', 'password', 'language', 'homes', 'kronan'] as const
+          ).map((key) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px whitespace-nowrap ${
+                tab === key
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {key === 'homes'
+                ? t('settings.homes')
+                : key === 'kronan'
+                  ? t('settings.kronan.tab')
+                  : t(`settings.${key}`)}
+            </button>
+          ))}
         </div>
 
         {tab === 'profile' && (
@@ -204,7 +262,7 @@ function SettingsPage() {
             <div className="space-y-3">
               <Label htmlFor="language">{t('settings.selectLanguage')}</Label>
               <Select
-                value={i18n.language ?? 'is'}
+                value={i18n.language || 'is'}
                 onValueChange={(value) => value && i18n.changeLanguage(value)}
               >
                 <SelectTrigger id="language" className="w-48">
@@ -216,6 +274,75 @@ function SettingsPage() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+        )}
+
+        {tab === 'kronan' && (
+          <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+            <div>
+              <h2 className="text-base font-display font-semibold">
+                {t('settings.kronan.title')}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t('settings.kronan.description')}
+              </p>
+            </div>
+
+            {kronanStatus === null ? (
+              <p className="text-sm text-muted-foreground">
+                {t('common.loading')}
+              </p>
+            ) : kronanStatus.connected ? (
+              <div className="space-y-3">
+                <div className="rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm">
+                  <p className="font-medium text-emerald-900">
+                    {t('settings.kronan.connected')}
+                  </p>
+                  {kronanStatus.identityName && (
+                    <p className="text-xs text-emerald-800/80 mt-0.5">
+                      {kronanStatus.identityName}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleDisconnectKronan}
+                  disabled={kronanSaving}
+                >
+                  {t('settings.kronan.disconnect')}
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleConnectKronan} className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="kronan-token">
+                    {t('settings.kronan.tokenLabel')}
+                  </Label>
+                  <Input
+                    id="kronan-token"
+                    type="password"
+                    autoComplete="off"
+                    value={kronanToken}
+                    onChange={(e) => setKronanToken(e.target.value)}
+                    placeholder={t('settings.kronan.tokenPlaceholder')}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('settings.kronan.tokenHint')}
+                  </p>
+                </div>
+                {kronanError && (
+                  <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                    {kronanError}
+                  </p>
+                )}
+                <Button type="submit" disabled={kronanSaving}>
+                  {kronanSaving
+                    ? t('common.saving')
+                    : t('settings.kronan.connect')}
+                </Button>
+              </form>
+            )}
           </div>
         )}
 

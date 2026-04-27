@@ -188,10 +188,12 @@ function ConstraintsPage() {
     }
 
     setTimeout(() => {
+      // eslint-disable-next-line no-hardcoded-english/no-hardcoded-english
       document.addEventListener('mousedown', handleClickOutside)
     }, 0)
 
     return () => {
+      // eslint-disable-next-line no-hardcoded-english/no-hardcoded-english
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [openDay])
@@ -209,10 +211,12 @@ function ConstraintsPage() {
     }
 
     setTimeout(() => {
+      // eslint-disable-next-line no-hardcoded-english/no-hardcoded-english
       document.addEventListener('mousedown', handleClickOutside)
     }, 0)
 
     return () => {
+      // eslint-disable-next-line no-hardcoded-english/no-hardcoded-english
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [showEmojiPicker])
