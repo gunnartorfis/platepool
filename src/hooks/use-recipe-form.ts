@@ -113,7 +113,7 @@ export function useRecipeForm(options?: UseRecipeFormOptions) {
     await generateTagsForTitle()
   }
 
-  async function handleUrlChange(value: string) {
+  function handleUrlChange(value: string) {
     setUrl(value)
     setFetchError(null)
 
