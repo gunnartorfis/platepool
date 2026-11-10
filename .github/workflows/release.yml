@@ -4,7 +4,7 @@ on:
     inputs:
       environment:
         type: choice
-        options: [staging, production]
+        options: [production]
         required: true
       production_approval:
         description: 'Production only: approved exact commit SHA'
