@@ -7,7 +7,8 @@ import {
 import { createServerFn } from '@tanstack/react-start'
 
 import appCss from '../styles.css?url'
-import '@/lib/i18n'
+import { I18nextProvider } from 'react-i18next'
+import i18n from '@/lib/i18n'
 import { getUser } from '@/lib/auth/get-user'
 
 const fetchUser = createServerFn({ method: 'GET' }).handler(async () => {
@@ -47,12 +48,12 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="is">
       <head>
         <HeadContent />
       </head>
       <body suppressHydrationWarning>
-        {children}
+        <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
         <Scripts />
       </body>
     </html>

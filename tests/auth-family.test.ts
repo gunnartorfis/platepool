@@ -1,5 +1,5 @@
-import { afterAll, beforeAll, expect, test, vi } from 'vitest'
 import { execFileSync } from 'node:child_process'
+import { afterAll, beforeAll, expect, test, vi } from 'vitest'
 import { eq } from 'drizzle-orm'
 
 const cookie = vi.hoisted(() => ({

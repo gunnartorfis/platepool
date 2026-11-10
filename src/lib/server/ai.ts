@@ -1,4 +1,3 @@
-import { requireLiveIntegrations } from './integration-mode'
 import { createServerFn } from '@tanstack/react-start'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { generateText } from 'ai'
@@ -14,6 +13,7 @@ import {
   recipeLinks,
 } from '../db/schema'
 import { getUser } from '../auth/get-user'
+import { requireLiveIntegrations } from './integration-mode'
 import { upsertHomeDayPlansBatch } from './homes'
 
 const DAY_NAMES = [

@@ -1,5 +1,5 @@
-import { requireLiveIntegrations } from '../integration-mode'
 import { eq } from 'drizzle-orm'
+import { requireLiveIntegrations } from '../integration-mode'
 import { getDbWithSchema } from '../../db'
 import { kronanCredentials } from '../../db/schema'
 
