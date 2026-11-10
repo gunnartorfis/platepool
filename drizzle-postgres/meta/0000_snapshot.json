@@ -43,7 +43,7 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": "false"
+          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -60,7 +60,9 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         }
       },
       "policies": {},
@@ -122,8 +124,12 @@
           "name": "constraints_user_id_users_id_fk",
           "tableFrom": "constraints",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -170,8 +176,12 @@
           "name": "meal_plans_user_id_users_id_fk",
           "tableFrom": "meal_plans",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -236,8 +246,12 @@
           "name": "day_plans_meal_plan_id_meal_plans_id_fk",
           "tableFrom": "day_plans",
           "tableTo": "meal_plans",
-          "columnsFrom": ["meal_plan_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "meal_plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -284,8 +298,12 @@
           "name": "day_templates_user_id_users_id_fk",
           "tableFrom": "day_templates",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -338,8 +356,12 @@
           "name": "families_created_by_users_id_fk",
           "tableFrom": "families",
           "tableTo": "users",
-          "columnsFrom": ["created_by"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -349,7 +371,9 @@
         "families_invite_code_unique": {
           "name": "families_invite_code_unique",
           "nullsNotDistinct": false,
-          "columns": ["invite_code"]
+          "columns": [
+            "invite_code"
+          ]
         }
       },
       "policies": {},
@@ -392,8 +416,12 @@
           "name": "family_meal_plans_family_id_families_id_fk",
           "tableFrom": "family_meal_plans",
           "tableTo": "families",
-          "columnsFrom": ["family_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "family_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -458,8 +486,12 @@
           "name": "family_day_plans_family_meal_plan_id_family_meal_plans_id_fk",
           "tableFrom": "family_day_plans",
           "tableTo": "family_meal_plans",
-          "columnsFrom": ["family_meal_plan_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "family_meal_plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -507,8 +539,12 @@
           "name": "family_members_user_id_users_id_fk",
           "tableFrom": "family_members",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -516,8 +552,12 @@
           "name": "family_members_family_id_families_id_fk",
           "tableFrom": "family_members",
           "tableTo": "families",
-          "columnsFrom": ["family_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "family_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -558,8 +598,12 @@
           "name": "family_shares_shared_with_family_id_families_id_fk",
           "tableFrom": "family_shares",
           "tableTo": "families",
-          "columnsFrom": ["shared_with_family_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "shared_with_family_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -567,8 +611,12 @@
           "name": "family_shares_family_meal_plan_id_family_meal_plans_id_fk",
           "tableFrom": "family_shares",
           "tableTo": "family_meal_plans",
-          "columnsFrom": ["family_meal_plan_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "family_meal_plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -609,8 +657,12 @@
           "name": "family_subscriptions_user_id_users_id_fk",
           "tableFrom": "family_subscriptions",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -618,8 +670,12 @@
           "name": "family_subscriptions_family_id_families_id_fk",
           "tableFrom": "family_subscriptions",
           "tableTo": "families",
-          "columnsFrom": ["family_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "family_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -673,8 +729,12 @@
           "name": "kronan_credentials_user_id_users_id_fk",
           "tableFrom": "kronan_credentials",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -737,14 +797,14 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": "0"
+          "default": 0
         },
         "curated": {
           "name": "curated",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": "0"
+          "default": 0
         },
         "created_at": {
           "name": "created_at",
@@ -760,8 +820,12 @@
           "name": "recipe_links_user_id_users_id_fk",
           "tableFrom": "recipe_links",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -801,8 +865,12 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
