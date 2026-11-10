@@ -1,0 +1,84 @@
+name: Controlled Railway release
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [production]
+        required: true
+      production_approval:
+        description: 'Production only: approved exact commit SHA'
+        type: string
+        required: false
+permissions:
+  contents: read
+concurrency:
+  group: platepool-schema-and-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: platepool
+          POSTGRES_PASSWORD: synthetic-ci-password
+          POSTGRES_DB: platepool_test
+        ports: ['5432:5432']
+        options: --health-cmd="pg_isready -U platepool -d platepool_test" --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      TEST_DATABASE_URL: postgresql://platepool:synthetic-ci-password@localhost:5432/platepool_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require production release gate
+        env:
+          TARGET: ${{ inputs.environment }}
+          APPROVAL: ${{ inputs.production_approval }}
+          RELEASE_GATES_CONFIGURED: ${{ vars.RELEASE_GATES_CONFIGURED }}
+        run: |
+          test "$RELEASE_GATES_CONFIGURED" = true
+          if [ "$TARGET" = production ]; then
+            test "$GITHUB_REF" = refs/heads/main
+            test "$APPROVAL" = "$GITHUB_SHA"
+          fi
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test:release
+      - run: pnpm test
+      - name: Install pinned Railway CLI
+        run: npm install --global @railway/cli@5.71.0
+      - name: Controlled schema release on Railway private network
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+          RAILWAY_SCHEMA_SERVICE_ID: ${{ vars.RAILWAY_SCHEMA_SERVICE_ID }}
+        run: |
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$RAILWAY_SCHEMA_SERVICE_ID"
+          railway up --project b0713a82-814e-4515-be0d-ecd84d036fda --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_SCHEMA_SERVICE_ID" --ci
+      - name: Deploy only configured environment
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+          RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
+          RAILWAY_CALLER: skill:use-railway@1.3.5
+          RAILWAY_AGENT_SESSION: platepool-github-release
+        run: |
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$RAILWAY_SERVICE_ID"
+          railway up --project b0713a82-814e-4515-be0d-ecd84d036fda --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_SERVICE_ID" --ci
+      - name: Built application smoke
+        env:
+          SMOKE_BASE_URL: ${{ vars.SMOKE_BASE_URL }}
+        run: |
+          test -n "$SMOKE_BASE_URL"
+          pnpm test:hosting

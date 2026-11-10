@@ -3,6 +3,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
+import { requireLiveIntegrations } from '../integration-mode'
 import { getDbWithSchema } from '../../db'
 import {
   familyDayPlans,
@@ -15,7 +16,6 @@ import { getUser } from '../../auth/get-user'
 import {
   KronanApiError,
   KronanNotConnectedError,
-  ensureKronanCredentialsTable,
   fetchKronanIdentity,
   kronanFetch,
   requireKronanToken,
@@ -51,7 +51,6 @@ export const getKronanStatus = createServerFn({ method: 'GET' }).handler(
   async () => {
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
-    await ensureKronanCredentialsTable()
     const db = await getDbWithSchema()
     const rows = await db
       .select({
@@ -88,7 +87,6 @@ export const connectKronan = createServerFn({ method: 'POST' })
     }
 
     const db = await getDbWithSchema()
-    await ensureKronanCredentialsTable()
     const existing = await db
       .select({ userId: kronanCredentials.userId })
       .from(kronanCredentials)
@@ -119,7 +117,6 @@ export const disconnectKronan = createServerFn({ method: 'POST' }).handler(
   async () => {
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
-    await ensureKronanCredentialsTable()
     const db = await getDbWithSchema()
     await db
       .delete(kronanCredentials)
@@ -134,57 +131,58 @@ export const disconnectKronan = createServerFn({ method: 'POST' }).handler(
 
 const KRONAN_RECIPE_PAGE_SIZE = 12
 
-export const getKronanRecipeQuickAdds = createServerFn({ method: 'GET' })
-  .handler(async () => {
-    const user = await getUser()
-    if (!user) throw new Error('Unauthorized')
-    const token = await requireKronanToken(user.id)
+export const getKronanRecipeQuickAdds = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  const user = await getUser()
+  if (!user) throw new Error('Unauthorized')
+  const token = await requireKronanToken(user.id)
 
-    const response = await kronanFetch<{
-      results?: Array<KronanRecipeSummary>
-      count?: number
-    }>({
-      path: '/recipes/',
-      query: { limit: KRONAN_RECIPE_PAGE_SIZE, offset: 0 },
-      token,
-    })
-
-    const recipes = response.results ?? []
-
-    const db = await getDbWithSchema()
-    const myRows = await db
-      .select({ url: recipeLinks.url, metadata: recipeLinks.metadata })
-      .from(recipeLinks)
-      .where(eq(recipeLinks.userId, user.id))
-
-    const importedSlugs = new Set<string>()
-    for (const row of myRows) {
-      if (!row.metadata) continue
-      try {
-        const meta = JSON.parse(row.metadata) as { kronanSlug?: string }
-        if (meta.kronanSlug) importedSlugs.add(meta.kronanSlug)
-      } catch {
-        // ignore non-JSON metadata
-      }
-    }
-
-    return recipes
-      .filter((r) => !importedSlugs.has(r.slug))
-      .slice(0, 8)
-      .map((r) => ({
-        slug: r.slug,
-        title: r.name,
-        description: r.totalMinutes
-          ? `~${r.totalMinutes} min · ${r.servings ?? '?'} skammtar`
-          : null,
-        image: r.mainImage ?? null,
-        tags: [
-          ...(r.cuisineTags ?? []),
-          ...(r.occasionTags ?? []),
-          ...(r.tags ?? []),
-        ].slice(0, 3),
-      }))
+  const response = await kronanFetch<{
+    results?: Array<KronanRecipeSummary>
+    count?: number
+  }>({
+    path: '/recipes/',
+    query: { limit: KRONAN_RECIPE_PAGE_SIZE, offset: 0 },
+    token,
   })
+
+  const recipes = response.results ?? []
+
+  const db = await getDbWithSchema()
+  const myRows = await db
+    .select({ url: recipeLinks.url, metadata: recipeLinks.metadata })
+    .from(recipeLinks)
+    .where(eq(recipeLinks.userId, user.id))
+
+  const importedSlugs = new Set<string>()
+  for (const row of myRows) {
+    if (!row.metadata) continue
+    try {
+      const meta = JSON.parse(row.metadata) as { kronanSlug?: string }
+      if (meta.kronanSlug) importedSlugs.add(meta.kronanSlug)
+    } catch {
+      // ignore non-JSON metadata
+    }
+  }
+
+  return recipes
+    .filter((r) => !importedSlugs.has(r.slug))
+    .slice(0, 8)
+    .map((r) => ({
+      slug: r.slug,
+      title: r.name,
+      description: r.totalMinutes
+        ? `~${r.totalMinutes} min · ${r.servings ?? '?'} skammtar`
+        : null,
+      image: r.mainImage ?? null,
+      tags: [
+        ...(r.cuisineTags ?? []),
+        ...(r.occasionTags ?? []),
+        ...(r.tags ?? []),
+      ].slice(0, 3),
+    }))
+})
 
 export const importKronanRecipe = createServerFn({ method: 'POST' })
   .inputValidator((data: unknown) =>
@@ -241,10 +239,7 @@ export const importKronanRecipe = createServerFn({ method: 'POST' })
       servings: detail.servings ?? null,
       ingredients: ingredientNames,
       // Pre-mapped products so we never have to fuzzy-match these later.
-      kronanItems: [
-        ...(detail.items ?? []),
-        ...(detail.essentials ?? []),
-      ]
+      kronanItems: [...(detail.items ?? []), ...(detail.essentials ?? [])]
         .map((item) =>
           item.product
             ? {
@@ -335,8 +330,7 @@ export const extractMealPlanIngredients = createServerFn({ method: 'POST' })
       .map((d) => d.mealName?.trim())
       .filter((m): m is string => Boolean(m))
 
-    if (meals.length === 0)
-      return { items: [] as Array<ExtractedIngredient> }
+    if (meals.length === 0) return { items: [] as Array<ExtractedIngredient> }
 
     // 2. Pull ingredients from any imported Krónan recipes that match meals.
     const userRecipes = await db
@@ -386,6 +380,7 @@ export const extractMealPlanIngredients = createServerFn({ method: 'POST' })
     // 3. For meals not covered by Krónan recipes, ask the AI for ingredients.
     const aiMeals = meals.filter((m) => !mealsCoveredByKronan.has(m))
     if (aiMeals.length > 0) {
+      requireLiveIntegrations()
       const apiKey = process.env['GEMINI_API_KEY']
       if (apiKey) {
         const google = createGoogleGenerativeAI({ apiKey })
@@ -400,6 +395,7 @@ Respond ONLY with a JSON array, no other text. Each entry: {"meal": "<meal name>
 
         try {
           const { text } = await generateText({
+            abortSignal: AbortSignal.timeout(90_000),
             model: google('gemini-3.1-flash-lite-preview'),
             prompt,
           })
@@ -560,5 +556,8 @@ export const addToKronanCheckout = createServerFn({ method: 'POST' })
     } catch (err) {
       throw new Error(toUserMessage(err, 'Could not update Krónan cart'))
     }
-    return { added: skuItems.length, skipped: data.items.length - skuItems.length }
+    return {
+      added: skuItems.length,
+      skipped: data.items.length - skuItems.length,
+    }
   })

@@ -314,59 +314,35 @@ export const getSharedFamilyMealPlans = createServerFn({ method: 'GET' })
       .limit(1)
     if (!membership[0]) throw new Error('Not a member')
 
-    const plan = await db
-      .select()
-      .from(familyMealPlans)
+    // A share grants the recipient access to the source plan, never the reverse.
+    const incoming = await db
+      .select({ plan: familyMealPlans, family: families })
+      .from(familyShares)
+      .innerJoin(
+        familyMealPlans,
+        eq(familyShares.familyMealPlanId, familyMealPlans.id),
+      )
+      .innerJoin(families, eq(familyMealPlans.familyId, families.id))
       .where(
         and(
-          eq(familyMealPlans.familyId, data.familyId),
+          eq(familyShares.sharedWithFamilyId, data.familyId),
           eq(familyMealPlans.weekStart, data.weekStart),
         ),
       )
-      .limit(1)
-
-    if (!plan[0]) return []
-
-    const shares = await db
-      .select()
-      .from(familyShares)
-      .where(eq(familyShares.familyMealPlanId, plan[0].id))
 
     const sharedPlans = []
-    for (const share of shares) {
-      const sharedFamilyRows = await db
+    for (const { plan, family } of incoming) {
+      const days = await db
         .select()
-        .from(families)
-        .where(eq(families.id, share.sharedWithFamilyId))
-      const sharedFamily = sharedFamilyRows.at(0)
-
-      if (sharedFamily) {
-        const sharedPlan = await db
-          .select()
-          .from(familyMealPlans)
-          .where(
-            and(
-              eq(familyMealPlans.familyId, share.sharedWithFamilyId),
-              eq(familyMealPlans.weekStart, data.weekStart),
-            ),
-          )
-          .limit(1)
-
-        if (sharedPlan[0]) {
-          const days = await db
-            .select()
-            .from(familyDayPlans)
-            .where(eq(familyDayPlans.familyMealPlanId, sharedPlan[0].id))
-
-          sharedPlans.push({
-            family: sharedFamily,
-            days: days.map((d) => ({
-              ...d,
-              constraintIds: JSON.parse(d.constraintIds) as Array<string>,
-            })),
-          })
-        }
-      }
+        .from(familyDayPlans)
+        .where(eq(familyDayPlans.familyMealPlanId, plan.id))
+      sharedPlans.push({
+        family: { id: family.id, name: family.name },
+        days: days.map((d) => ({
+          ...d,
+          constraintIds: JSON.parse(d.constraintIds) as Array<string>,
+        })),
+      })
     }
 
     return sharedPlans

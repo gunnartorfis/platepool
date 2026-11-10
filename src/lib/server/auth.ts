@@ -39,6 +39,7 @@ export const login = createServerFn({ method: 'POST' })
 
     const sessionId = await createSession(user.id)
     setCookie(SESSION_COOKIE, sessionId, {
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
@@ -75,6 +76,7 @@ export const register = createServerFn({ method: 'POST' })
 
     const sessionId = await createSession(id)
     setCookie(SESSION_COOKIE, sessionId, {
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       sameSite: 'lax',
       path: '/',

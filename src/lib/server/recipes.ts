@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { getDbWithSchema } from '../db'
 import { recipeLinks } from '../db/schema'
 import { getUser } from '../auth/get-user'
+import { requireLiveIntegrations } from './integration-mode'
+import { fetchPublicHtml } from './public-html'
 
 function uid() {
   return crypto.randomUUID()
@@ -176,13 +178,11 @@ export const fetchRecipeMetadata = createServerFn({ method: 'POST' })
     z.object({ url: z.string().url() }).parse(data),
   )
   .handler(async ({ data }) => {
+    const user = await getUser()
+    if (!user) throw new Error('Unauthorized')
+    requireLiveIntegrations()
     try {
-      const response = await fetch(data.url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; PlatePool/1.0)',
-        },
-      })
-      const html = await response.text()
+      const html = await fetchPublicHtml(data.url)
 
       const metadata: { [key: string]: {} } = {}
 
@@ -298,6 +298,9 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
       .parse(data),
   )
   .handler(async ({ data }) => {
+    const user = await getUser()
+    if (!user) throw new Error('Unauthorized')
+    requireLiveIntegrations()
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
       return { error: 'AI not configured' }
@@ -327,6 +330,7 @@ ${ingredientsList ? `Ingredients: ${ingredientsList}` : ''}
 Return ONLY a JSON array of strings, like ["fish", "healthy", "baked", "quick"]. No other text. Tags MUST be in ${languageName}.`
 
     const { text } = await generateText({
+      abortSignal: AbortSignal.timeout(90_000),
       model: google('gemini-3.1-flash-lite-preview'),
       prompt,
     })
