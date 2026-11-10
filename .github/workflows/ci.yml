@@ -29,6 +29,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Verify migration snapshot matches schema
+        run: |
+          pnpm db:generate
+          git diff --exit-code -- drizzle-postgres
+          test -z "$(git ls-files --others --exclude-standard drizzle-postgres)"
       - run: pnpm typecheck
       - run: pnpm lint
       - run: node --test tests/*.test.mjs

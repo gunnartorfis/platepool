@@ -56,12 +56,15 @@ jobs:
       - run: pnpm test
       - name: Install pinned Railway CLI
         run: npm install --global @railway/cli@5.71.0
-      - name: Controlled schema release
+      - name: Controlled schema release on Railway private network
         env:
-          DEPLOY_ENV: ${{ inputs.environment }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DB_DEPLOY_TARGET: ${{ vars.DB_DEPLOY_TARGET }}
-        run: pnpm db:deploy
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+          RAILWAY_SCHEMA_SERVICE_ID: ${{ vars.RAILWAY_SCHEMA_SERVICE_ID }}
+        run: |
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$RAILWAY_SCHEMA_SERVICE_ID"
+          railway up --project b0713a82-814e-4515-be0d-ecd84d036fda --environment "$RAILWAY_ENVIRONMENT_ID" --service "$RAILWAY_SCHEMA_SERVICE_ID" --ci
       - name: Deploy only configured environment
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

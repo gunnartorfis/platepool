@@ -298,6 +298,8 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
       .parse(data),
   )
   .handler(async ({ data }) => {
+    const user = await getUser()
+    if (!user) throw new Error('Unauthorized')
     requireLiveIntegrations()
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
