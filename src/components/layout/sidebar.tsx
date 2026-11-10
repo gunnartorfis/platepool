@@ -31,7 +31,7 @@ const NAV = [
   { to: '/constraints', labelKey: 'nav.constraints', icon: ConstraintsIcon },
 ]
 
-export function Sidebar({ user }: { user: User }) {
+export function Sidebar({ user }: { user: Omit<User, 'passwordHash'> }) {
   const { t, i18n } = useTranslation()
   const { location } = useRouterState()
   const router = useRouter()
