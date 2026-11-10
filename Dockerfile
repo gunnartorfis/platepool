@@ -12,7 +12,7 @@ RUN pnpm test:release
 
 FROM node:24.21.0-bookworm-slim AS runtime
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000
-ENV NITRO_SHUTDOWN_TIMEOUT=120000
+ENV SERVER_SHUTDOWN_TIMEOUT=120 SERVER_FORCE_SHUTDOWN_TIMEOUT=5
 WORKDIR /app
 COPY --from=build --chown=node:node /app/.output ./.output
 USER node

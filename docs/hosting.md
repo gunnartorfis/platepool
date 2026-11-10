@@ -46,7 +46,7 @@ Tests: TEST_DATABASE_URL must identify a separate disposable PostgreSQL database
 
 ## Reproducible build and release
 
-Dockerfile installs Node 24.21.0/pnpm 10.29.2 with the frozen pnpm lock, then builds, checks types and runs dependency-free release guards. Verify the actual `.output/server/index.mjs` output before deploy; the image asserts its existence. Runtime contains only .output, runs as node, listens on 0.0.0.0/PORT and handles SIGTERM through Nitro. Builds/startup do not touch schema or seed data.
+Dockerfile installs Node 24.21.0/pnpm 10.29.2 with the frozen pnpm lock, then builds, checks types and runs dependency-free release guards. Verify the actual `.output/server/index.mjs` output before deploy; the image asserts its existence. Runtime contains only .output, runs as node, listens on 0.0.0.0/PORT and handles SIGTERM through Nitro/srvx. This installed srvx version reads SERVER_SHUTDOWN_TIMEOUT in seconds (120) and SERVER_FORCE_SHUTDOWN_TIMEOUT (5); NITRO_SHUTDOWN_TIMEOUT is not read by this preset. Railway drain is 130s. Builds/startup do not touch schema or seed data.
 
 1. Commit reviewed source on codex/railway-hosting. GitHub write access was rechecked successfully; no user push is required.
 2. Connect Railway to the exact commit SHA (not a floating branch). Inspect build logs, output layout and type errors. Keep platepool.com on the working host while resolving failures.
@@ -94,5 +94,7 @@ Gunnar requested production only. Removed the unused staging web service, stagin
 - Ten authenticated /recipes requests from the operator connection: 63–163ms, p50 65ms/p95 163ms. This includes network, SSR and SQL; it is not an isolated SQL measurement or load test. Turso latency no longer applies.
 - Railway last-hour metrics during deployment/testing: web current RAM 0.115GB, observed peak 0.199GB; Postgres current RAM 0.055GB/peak 0.061GB. Averages include startup/idle periods, so they cannot establish an active-user forecast.
 - Backups UI: workspace must upgrade to Pro to create backups, automatic schedules or PITR. No backup or restore drill is configured/claimed. Pro purchase requires owner action/approval. Until then this is a release dependency, despite the persistent volume.
-- GEMINI_API_KEY remains absent on web-production. Live AI acceptance is blocked until its owner sets the runtime secret and provider budget. No real grocery account, cart or purchase was exercised.
+- GEMINI_API_KEY was recovered from Vercel without displaying/logging its value and staged on web-production. The single-change patch b02343fe-0ca6-45a8-b212-9a3913890a95 is not applied: automatic approval review requires explicit approval to deploy this secret-bearing change. Live AI acceptance and provider budget verification remain blocked. No real grocery account, cart or purchase was exercised.
 - Custom-domain attachment was blocked by automatic approval review: explicit public production approval is required after validation. platepool.com remains on Vercel. Nothing was deleted from the old host/data providers.
+
+PostgreSQL resource cap proposal (1vCPU/0.5GB) and ON_FAILURE/5 were not applied: automatic approval review requires approval for that live database change because it may interrupt operations. Current provider defaults remain.
