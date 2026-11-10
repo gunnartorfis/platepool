@@ -11,8 +11,8 @@ export function validateMigrationTarget(env) {
   ) {
     throw new Error('DATABASE_URL must specify host, database and credentials')
   }
-  if (!['staging', 'production', 'test'].includes(env.DEPLOY_ENV)) {
-    throw new Error('Set DEPLOY_ENV to staging, production or test')
+  if (!['production', 'test'].includes(env.DEPLOY_ENV)) {
+    throw new Error('Set DEPLOY_ENV to production or test')
   }
   // Compare a public database identity, never duplicate credentials in config/logs.
   const target = `${parsed.hostname}:${parsed.port || '5432'}${parsed.pathname}`
