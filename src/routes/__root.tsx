@@ -6,8 +6,9 @@ import {
 } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
-import appCss from '../styles.css?url'
 import { I18nextProvider } from 'react-i18next'
+
+import appCss from '../styles.css?url'
 import i18n from '@/lib/i18n'
 import { getUser } from '@/lib/auth/get-user'
 

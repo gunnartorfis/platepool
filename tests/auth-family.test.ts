@@ -7,7 +7,7 @@ const cookie = vi.hoisted(() => ({
   options: {} as Record<string, unknown>,
 }))
 // Exercise real handlers, password hashing, sessions and SQL without a framework
-// request context. HTTP/proxy/CSRF and hydration still require browser staging tests.
+// request context. HTTP/proxy checks run separately on the production candidate.
 vi.mock('@tanstack/react-start', () => ({
   createServerFn: () => {
     let parse = (data: unknown) => data
@@ -39,7 +39,7 @@ vi.mock('@tanstack/react-start/server', () => ({
   },
 }))
 let connected = false
-beforeAll(async () => {
+beforeAll(() => {
   const url = process.env.TEST_DATABASE_URL
   if (!url || !new URL(url).pathname.endsWith('_test')) {
     throw new Error(
@@ -48,6 +48,7 @@ beforeAll(async () => {
   }
   vi.stubEnv('DATABASE_URL', url)
   vi.stubEnv('NODE_ENV', 'test')
+  vi.stubEnv('INTEGRATION_MODE', 'disabled')
   const target = new URL(url)
   const env = {
     ...process.env,
@@ -152,6 +153,40 @@ test('registration, secure session, database-backed persistence, logout, expirat
   ).rejects.toThrow('Not a member')
   expect(await recipes.getMyRecipes()).toEqual([])
   expect(await constraints.getMyConstraints()).toEqual([])
+  const bSession = cookie.value
+  const otherHome = await families.createFamily({
+    data: { name: 'Synthetic B family' },
+  })
+  await plans.upsertFamilyDayPlan({
+    data: {
+      familyId: otherHome.id,
+      weekStart: '2026-11-09',
+      dayOfWeek: 0,
+      mealName: 'Private B meal',
+    },
+  })
+  cookie.value = persistedSession
+  await plans.shareFamilyMealPlan({
+    data: {
+      familyId: home.id,
+      weekStart: '2026-11-09',
+      shareWithFamilyId: otherHome.id,
+    },
+  })
+  expect(
+    await plans.getSharedFamilyMealPlans({
+      data: { familyId: home.id, weekStart: '2026-11-09' },
+    }),
+  ).toEqual([])
+  cookie.value = bSession
+  const received = await plans.getSharedFamilyMealPlans({
+    data: { familyId: otherHome.id, weekStart: '2026-11-09' },
+  })
+  expect(received[0].days[0].mealName).toBe('Synthetic soup')
+  expect(received[0].family).not.toHaveProperty('inviteCode')
+  await expect(
+    recipes.fetchRecipeMetadata({ data: { url: 'https://127.0.0.1/' } }),
+  ).rejects.toThrow('External integrations are disabled')
   await families.joinFamily({ data: { inviteCode: home.inviteCode } })
   expect(
     (

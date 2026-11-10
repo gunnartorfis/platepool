@@ -12,7 +12,8 @@ const sameOrigin = createMiddleware({ type: 'request' }).server(
         const target = new URL(request.url)
         valid =
           source.host === target.host &&
-          (process.env.NODE_ENV !== 'production' || source.protocol === 'https:')
+          (process.env.NODE_ENV !== 'production' ||
+            source.protocol === 'https:')
       } catch {
         valid = false
       }

@@ -5,6 +5,7 @@ import { getDbWithSchema } from '../db'
 import { recipeLinks } from '../db/schema'
 import { getUser } from '../auth/get-user'
 import { requireLiveIntegrations } from './integration-mode'
+import { fetchPublicHtml } from './public-html'
 
 function uid() {
   return crypto.randomUUID()
@@ -177,13 +178,11 @@ export const fetchRecipeMetadata = createServerFn({ method: 'POST' })
     z.object({ url: z.string().url() }).parse(data),
   )
   .handler(async ({ data }) => {
+    const user = await getUser()
+    if (!user) throw new Error('Unauthorized')
+    requireLiveIntegrations()
     try {
-      const response = await fetch(data.url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; PlatePool/1.0)',
-        },
-      })
-      const html = await response.text()
+      const html = await fetchPublicHtml(data.url)
 
       const metadata: { [key: string]: {} } = {}
 
