@@ -6,7 +6,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 COPY . .
-RUN NODE_ENV=production pnpm build && pnpm typecheck && pnpm test:release && test -s .output/server/index.mjs
+RUN NODE_ENV=production pnpm build && test -s .output/server/index.mjs
+RUN node scripts/verify-types.mjs
+RUN pnpm test:release
 
 FROM node:24.21.0-bookworm-slim AS runtime
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000
