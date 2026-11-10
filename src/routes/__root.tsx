@@ -11,7 +11,10 @@ import '@/lib/i18n'
 import { getUser } from '@/lib/auth/get-user'
 
 const fetchUser = createServerFn({ method: 'GET' }).handler(async () => {
-  return getUser()
+  const user = await getUser()
+  if (!user) return null
+  const { passwordHash: _passwordHash, ...publicUser } = user
+  return publicUser
 })
 
 export const Route = createRootRoute({

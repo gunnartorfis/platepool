@@ -1,35 +1,55 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: platepool
+          POSTGRES_PASSWORD: synthetic-ci-password
+          POSTGRES_DB: platepool_test
+        ports: ['5432:5432']
+        options: --health-cmd="pg_isready -U platepool -d platepool_test" --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      TEST_DATABASE_URL: postgresql://platepool:synthetic-ci-password@localhost:5432/platepool_test
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Typecheck
-        run: pnpm exec tsc --noEmit
-
-      - name: Lint
-        run: pnpm run lint
-
-      - name: Build
-        run: pnpm run build
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: node --test tests/*.test.mjs
+      - run: pnpm test
+      - run: test -s .output/server/index.mjs
+      - run: docker build -t platepool:ci .
+      - name: Built container smoke and termination
+        run: |
+          docker run -d --name platepool -p 3000:3000 -e DATABASE_URL=postgresql://synthetic:synthetic@unreachable.invalid/railway -e INTEGRATION_MODE=disabled platepool:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/health; then break; fi
+            sleep 1
+          done
+          pnpm test:hosting
+          docker stop --time 130 platepool
+          test "$(docker inspect -f '{{.State.ExitCode}}' platepool)" = 0
+          docker start platepool
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/health; then break; fi
+            sleep 1
+          done
+          pnpm test:hosting
+      - if: always()
+        run: docker rm -f platepool || true

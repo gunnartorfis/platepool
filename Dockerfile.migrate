@@ -1,0 +1,11 @@
+FROM node:24.21.0-bookworm-slim
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+RUN corepack enable && corepack prepare pnpm@10.29.2 --activate
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile
+COPY scripts/db-deploy.mjs scripts/release-config.mjs ./scripts/
+COPY drizzle-postgres ./drizzle-postgres
+USER node
+CMD ["node", "scripts/db-deploy.mjs"]

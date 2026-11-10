@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as RecipesRouteImport } from './routes/recipes'
+import { Route as HealthRouteImport } from './routes/health'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConstraintsRouteImport } from './routes/constraints'
 import { Route as IndexRouteImport } from './routes/_index'
@@ -30,6 +31,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const RecipesRoute = RecipesRouteImport.update({
   id: '/recipes',
   path: '/recipes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthRoute = HealthRouteImport.update({
+  id: '/health',
+  path: '/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -55,6 +61,7 @@ const SubscriptionsIndexRoute = SubscriptionsIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/constraints': typeof ConstraintsRoute
+  '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/recipes': typeof RecipesRoute
   '/register': typeof RegisterRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/constraints': typeof ConstraintsRoute
+  '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/recipes': typeof RecipesRoute
   '/register': typeof RegisterRoute
@@ -74,6 +82,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_index': typeof IndexRoute
   '/constraints': typeof ConstraintsRoute
+  '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/recipes': typeof RecipesRoute
   '/register': typeof RegisterRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/constraints'
+    | '/health'
     | '/login'
     | '/recipes'
     | '/register'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/constraints'
+    | '/health'
     | '/login'
     | '/recipes'
     | '/register'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_index'
     | '/constraints'
+    | '/health'
     | '/login'
     | '/recipes'
     | '/register'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ConstraintsRoute: typeof ConstraintsRoute
+  HealthRoute: typeof HealthRoute
   LoginRoute: typeof LoginRoute
   RecipesRoute: typeof RecipesRoute
   RegisterRoute: typeof RegisterRoute
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/recipes'
       fullPath: '/recipes'
       preLoaderRoute: typeof RecipesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/health': {
+      id: '/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof HealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ConstraintsRoute: ConstraintsRoute,
+  HealthRoute: HealthRoute,
   LoginRoute: LoginRoute,
   RecipesRoute: RecipesRoute,
   RegisterRoute: RegisterRoute,

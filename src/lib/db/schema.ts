@@ -1,41 +1,41 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-import { sql } from 'drizzle-orm'
+import { boolean, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
-export const users = sqliteTable('users', {
+export const users = pgTable('users', {
   id: text('id').primaryKey(),
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
   passwordHash: text('password_hash').notNull(),
   avatarUrl: text('avatar_url'),
-  homeSetupCompleted: integer('home_setup_completed', { mode: 'boolean' })
+  homeSetupCompleted: boolean('home_setup_completed').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(false),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .default(sql`(unixepoch())`),
+    .defaultNow(),
 })
 
-export const sessions = sqliteTable('sessions', {
+export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+  expiresAt: timestamp('expires_at', {
+    withTimezone: true,
+    mode: 'date',
+  }).notNull(),
 })
 
-export const families = sqliteTable('families', {
+export const families = pgTable('families', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   createdBy: text('created_by')
     .notNull()
     .references(() => users.id),
   inviteCode: text('invite_code').notNull().unique(),
-  createdAt: integer('created_at', { mode: 'timestamp' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(sql`(unixepoch())`),
+    .defaultNow(),
 })
 
-export const familyMembers = sqliteTable('family_members', {
+export const familyMembers = pgTable('family_members', {
   familyId: text('family_id')
     .notNull()
     .references(() => families.id, { onDelete: 'cascade' }),
@@ -45,23 +45,23 @@ export const familyMembers = sqliteTable('family_members', {
   role: text('role', { enum: ['admin', 'member'] })
     .notNull()
     .default('member'),
-  joinedAt: integer('joined_at', { mode: 'timestamp' })
+  joinedAt: timestamp('joined_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(sql`(unixepoch())`),
+    .defaultNow(),
 })
 
-export const familyMealPlans = sqliteTable('family_meal_plans', {
+export const familyMealPlans = pgTable('family_meal_plans', {
   id: text('id').primaryKey(),
   familyId: text('family_id')
     .notNull()
     .references(() => families.id, { onDelete: 'cascade' }),
   weekStart: text('week_start').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(sql`(unixepoch())`),
+    .defaultNow(),
 })
 
-export const familyDayPlans = sqliteTable('family_day_plans', {
+export const familyDayPlans = pgTable('family_day_plans', {
   id: text('id').primaryKey(),
   familyMealPlanId: text('family_meal_plan_id')
     .notNull()
@@ -73,31 +73,31 @@ export const familyDayPlans = sqliteTable('family_day_plans', {
   constraintIds: text('constraint_ids').notNull().default('[]'),
 })
 
-export const familyShares = sqliteTable('family_shares', {
+export const familyShares = pgTable('family_shares', {
   familyMealPlanId: text('family_meal_plan_id')
     .notNull()
     .references(() => familyMealPlans.id, { onDelete: 'cascade' }),
   sharedWithFamilyId: text('shared_with_family_id')
     .notNull()
     .references(() => families.id, { onDelete: 'cascade' }),
-  sharedAt: integer('shared_at', { mode: 'timestamp' })
+  sharedAt: timestamp('shared_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(sql`(unixepoch())`),
+    .defaultNow(),
 })
 
-export const familySubscriptions = sqliteTable('family_subscriptions', {
+export const familySubscriptions = pgTable('family_subscriptions', {
   familyId: text('family_id')
     .notNull()
     .references(() => families.id, { onDelete: 'cascade' }),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  subscribedAt: integer('subscribed_at', { mode: 'timestamp' })
+  subscribedAt: timestamp('subscribed_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(sql`(unixepoch())`),
+    .defaultNow(),
 })
 
-export const constraints = sqliteTable('constraints', {
+export const constraints = pgTable('constraints', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -111,7 +111,7 @@ export const constraints = sqliteTable('constraints', {
   frequency: text('frequency'),
 })
 
-export const dayTemplates = sqliteTable('day_templates', {
+export const dayTemplates = pgTable('day_templates', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -120,7 +120,7 @@ export const dayTemplates = sqliteTable('day_templates', {
   constraintIds: text('constraint_ids').notNull().default('[]'),
 })
 
-export const recipeLinks = sqliteTable('recipe_links', {
+export const recipeLinks = pgTable('recipe_links', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -132,23 +132,23 @@ export const recipeLinks = sqliteTable('recipe_links', {
   tags: text('tags').notNull().default('[]'),
   stars: integer('stars').notNull().default(0),
   curated: integer('curated').notNull().default(0),
-  createdAt: integer('created_at', { mode: 'timestamp' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(sql`(unixepoch())`),
+    .defaultNow(),
 })
 
-export const mealPlans = sqliteTable('meal_plans', {
+export const mealPlans = pgTable('meal_plans', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   weekStart: text('week_start').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(sql`(unixepoch())`),
+    .defaultNow(),
 })
 
-export const dayPlans = sqliteTable('day_plans', {
+export const dayPlans = pgTable('day_plans', {
   id: text('id').primaryKey(),
   mealPlanId: text('meal_plan_id')
     .notNull()
@@ -160,18 +160,18 @@ export const dayPlans = sqliteTable('day_plans', {
   constraintIds: text('constraint_ids').notNull().default('[]'),
 })
 
-export const kronanCredentials = sqliteTable('kronan_credentials', {
+export const kronanCredentials = pgTable('kronan_credentials', {
   userId: text('user_id')
     .primaryKey()
     .references(() => users.id, { onDelete: 'cascade' }),
   accessToken: text('access_token').notNull(),
   identityName: text('identity_name'),
-  createdAt: integer('created_at', { mode: 'timestamp' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
     .notNull()
-    .default(sql`(unixepoch())`),
+    .defaultNow(),
 })
 
 // Types

@@ -7,6 +7,7 @@ export default [
   {
     ignores: [
       '.agents/**',
+      '.railway/**',
       '.output/**',
       '.tanstack/**',
       '.nitro/**',

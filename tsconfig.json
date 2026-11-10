@@ -12,7 +12,8 @@
     ".agents",
     ".output",
     ".tanstack",
-    ".nitro"
+    ".nitro",
+    ".railway"
   ],
 
   "compilerOptions": {

@@ -1,3 +1,4 @@
+import { requireLiveIntegrations } from './integration-mode'
 import { createServerFn } from '@tanstack/react-start'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { generateText } from 'ai'
@@ -62,6 +63,7 @@ If no issues, respond: {"issues": []}`
 
   const google = createGoogleGenerativeAI({ apiKey })
   const { text } = await generateText({
+    abortSignal: AbortSignal.timeout(90_000),
     model: google('gemini-3.1-flash-lite-preview'),
     prompt: validationPrompt,
   })
@@ -96,6 +98,7 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
     const user = await getUser()
     if (!user) throw new Error('Unauthorized')
 
+    requireLiveIntegrations()
     const apiKey = process.env['GEMINI_API_KEY']
     if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
 
@@ -341,6 +344,7 @@ Generate exactly ${totalDays} entries, one per date.`
     for (let loop = 0; loop < MAX_VALIDATION_LOOPS; loop++) {
       const google = createGoogleGenerativeAI({ apiKey })
       const { text } = await generateText({
+        abortSignal: AbortSignal.timeout(90_000),
         model: google('gemini-3.1-flash-lite-preview'),
         prompt,
       })

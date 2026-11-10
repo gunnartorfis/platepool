@@ -1,3 +1,4 @@
+import { requireLiveIntegrations } from './integration-mode'
 import { createServerFn } from '@tanstack/react-start'
 import { and, eq, isNull } from 'drizzle-orm'
 import { z } from 'zod'
@@ -298,6 +299,7 @@ export const generateRecipeTags = createServerFn({ method: 'POST' })
       .parse(data),
   )
   .handler(async ({ data }) => {
+    requireLiveIntegrations()
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
       return { error: 'AI not configured' }
@@ -327,6 +329,7 @@ ${ingredientsList ? `Ingredients: ${ingredientsList}` : ''}
 Return ONLY a JSON array of strings, like ["fish", "healthy", "baked", "quick"]. No other text. Tags MUST be in ${languageName}.`
 
     const { text } = await generateText({
+      abortSignal: AbortSignal.timeout(90_000),
       model: google('gemini-3.1-flash-lite-preview'),
       prompt,
     })
